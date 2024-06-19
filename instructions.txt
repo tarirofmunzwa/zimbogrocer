@@ -39,7 +39,6 @@ Feature 1
 Feature 2
 Feature 3
 Price: $XX.XX
-(Continue listing all products in this format)
 
 Contact Details:
 
