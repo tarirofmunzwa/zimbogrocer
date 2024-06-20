@@ -6,7 +6,6 @@ import fitz
 
 wa_token=os.environ.get("WA_TOKEN")
 genai.configure(api_key=os.environ.get("GEN_API"))
-phone_id=os.environ.get("PHONE_ID")
 model_name="gemini-1.5-flash-latest"
 
 app=Flask(__name__)
@@ -36,7 +35,7 @@ with open("instructions.txt","r") as f:
     commands=f.read()
 convo.send_message(commands)
 
-def send(answer,sender):
+def send(answer,sender,phone_id):
     url=f"https://graph.facebook.com/v18.0/{phone_id}/messages"
     headers={
         'Authorization': f'Bearer {wa_token}',
@@ -75,11 +74,12 @@ def webhook():
     elif request.method == "POST":
         try:
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
+            phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
             sender="+"+data["from"]
             if data["type"] == "text":
                 prompt = data["text"]["body"]
                 convo.send_message(prompt)
-                send(convo.last.text,sender)
+                send(convo.last.text,sender,phone_id)
             else:
                 media_url_endpoint = f'https://graph.facebook.com/v18.0/{data[data["type"]]["id"]}/'
                 headers = {'Authorization': f'Bearer {wa_token}'}
@@ -100,9 +100,9 @@ def webhook():
                         response = model.generate_content(["What is this",file])
                         answer=response._result.candidates[0].content.parts[0].text
                         convo.send_message(f"Direct image input has limitations, so this message is created by an llm model based on the image prompt of user, reply to the user assuming you saw that image: {answer}")
-                        send(convo.last.text,sender)
+                        send(convo.last.text,sender,phone_id)
                         remove(destination)
-                else:send("This format is not Supported by the bot ☹",sender)
+                else:send("This format is not Supported by the bot ☹",sender,phone_id)
                 with open(filename, "wb") as temp_media:
                     temp_media.write(media_download_response.content)
                 file = genai.upload_file(path=filename,display_name="tempfile")
@@ -110,7 +110,7 @@ def webhook():
                 answer=response._result.candidates[0].content.parts[0].text
                 remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
                 convo.send_message(f"Direct media input has limitations, so this is a voice/image message from user which is transcribed by an llm model, reply to the user assuming you heard/saw media file: {answer}")
-                send(convo.last.text,sender)
+                send(convo.last.text,sender,phone_id)
                 files=genai.list_files()
                 for file in files:
                     file.delete()
