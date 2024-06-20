@@ -36,7 +36,7 @@ with open("instructions.txt","r") as f:
 convo.send_message(commands)
 
 def send(answer,sender,phone_id):
-    url=f"https://graph.facebook.com/v18.0/{phone_id}/messages"
+    url=f"https://graph.facebook.com/v19.0/{phone_id}/messages"
     headers={
         'Authorization': f'Bearer {wa_token}',
         'Content-Type': 'application/json'
