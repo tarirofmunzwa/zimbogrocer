@@ -122,6 +122,6 @@ def webhook():
             else:send(reply,sender,phone_id)
         except:pass
         return jsonify({"status": "ok"}), 200
-    return "WhatsApp Bot is Running"
+    else:return "WhatsApp Bot is Running"
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
