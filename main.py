@@ -5,12 +5,12 @@ import os
 import fitz
 
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
-genai.configure(api_key=os.environ.get("GEN_API")) # Gemini API Key
-owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with +countrycode
+gen_api=os.environ.get("GEN_API") # Gemini API Key
+owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
 model_name="gemini-1.5-flash-latest"
 
 app=Flask(__name__)
-
+genai.configure(api_key=gen_api)
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
@@ -37,19 +37,18 @@ with open("instructions.txt","r") as f:
 convo.send_message(commands)
 
 def send(answer,sender,phone_id):
-    url=f"https://graph.facebook.com/v18.0/{phone_id}/messages"
-    headers={
+    url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
+    headers = {
         'Authorization': f'Bearer {wa_token}',
         'Content-Type': 'application/json'
     }
-    data={
-          "messaging_product": "whatsapp", 
-          "to": f"{sender}", 
-          "type": "text",
-          "text":{"body": f"{answer}"},
-          }
-    
-    response=requests.post(url, headers=headers,json=data)
+    data = {
+        "messaging_product": "whatsapp",
+        "to": f"{sender}",
+        "type": "text",
+        "text": {"body": f"{answer}"},
+    }
+    response = requests.post(url, headers=headers, json=data)
     return response
 
 def remove(*file_paths):
@@ -76,7 +75,7 @@ def webhook():
         try:
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
             phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
-            sender="+"+data["from"]
+            sender=data["from"]
             if data["type"] == "text":
                 prompt = data["text"]["body"]
                 convo.send_message(prompt)
