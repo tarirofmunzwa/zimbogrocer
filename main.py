@@ -1,5 +1,5 @@
 import google.generativeai as genai
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,render_template
 import requests
 import os
 import fitz
@@ -59,6 +59,10 @@ def remove(*file_paths):
         else:pass
 
 @app.route("/", methods=["GET", "POST"])
+def index():
+    return render_template("connected.html")
+
+@app.route("/webhook", methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
         mode = request.args.get("hub.mode")
@@ -120,7 +124,7 @@ def webhook():
                 send(f"customer {sender} is not satisfied",owner_phone,phone_id)
                 send("Our agent will contact you shortly.",sender,phone_id)
             else:send(reply,sender,phone_id)
-        except:pass
+        except :pass
         return jsonify({"status": "ok"}), 200
     else:return "WhatsApp Bot is Running"
 if __name__ == "__main__":
