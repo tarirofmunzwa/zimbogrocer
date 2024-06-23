@@ -4,8 +4,9 @@ import requests
 import os
 import fitz
 
-wa_token=os.environ.get("WA_TOKEN")
-genai.configure(api_key=os.environ.get("GEN_API"))
+wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
+genai.configure(api_key=os.environ.get("GEN_API")) # Gemini API Key
+owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with +countrycode
 model_name="gemini-1.5-flash-latest"
 
 app=Flask(__name__)
@@ -57,11 +58,7 @@ def remove(*file_paths):
             os.remove(file)
         else:pass
 
-@app.route("/",methods=["GET","POST"])
-def index():
-    return "Bot"
-
-@app.route("/webhook", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
         mode = request.args.get("hub.mode")
@@ -79,7 +76,6 @@ def webhook():
             if data["type"] == "text":
                 prompt = data["text"]["body"]
                 convo.send_message(prompt)
-                send(convo.last.text,sender,phone_id)
             else:
                 media_url_endpoint = f'https://graph.facebook.com/v18.0/{data[data["type"]]["id"]}/'
                 headers = {'Authorization': f'Bearer {wa_token}'}
@@ -99,22 +95,33 @@ def webhook():
                         file = genai.upload_file(path=destination,display_name="tempfile")
                         response = model.generate_content(["What is this",file])
                         answer=response._result.candidates[0].content.parts[0].text
-                        convo.send_message(f"Direct image input has limitations, so this message is created by an llm model based on the image prompt of user, reply to the user assuming you saw that image: {answer}")
-                        send(convo.last.text,sender,phone_id)
+                        convo.send_message(f'''Direct image input has limitations,
+                                           so this message is created by an llm model based on the image prompt of user, 
+                                            reply to the customer assuming you saw that image 
+                                           (Warn the customer and stop the chat if it is not related to the business): {answer}''')
                         remove(destination)
                 else:send("This format is not Supported by the bot ☹",sender,phone_id)
-                with open(filename, "wb") as temp_media:
-                    temp_media.write(media_download_response.content)
-                file = genai.upload_file(path=filename,display_name="tempfile")
-                response = model.generate_content(["What is this",file])
-                answer=response._result.candidates[0].content.parts[0].text
-                remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
-                convo.send_message(f"Direct media input has limitations, so this is a voice/image message from user which is transcribed by an llm model, reply to the user assuming you heard/saw media file: {answer}")
-                send(convo.last.text,sender,phone_id)
+                if data["type"] == "image" or data["type"] == "audio":
+                    with open(filename, "wb") as temp_media:
+                        temp_media.write(media_download_response.content)
+                    file = genai.upload_file(path=filename,display_name="tempfile")
+                    response = model.generate_content(["What is this",file])
+                    answer=response._result.candidates[0].content.parts[0].text
+                    remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+                    convo.send_message(f'''Direct media input has limitations,
+                                            so this message is created by an llm model based on the image prompt of user, 
+                                            reply to the customer assuming you saw that image 
+                                            (Warn the customer and stop the chat if it is not related to the business): {answer}''')
                 files=genai.list_files()
                 for file in files:
                     file.delete()
-        except :pass
+            reply=convo.last.text
+            if "unable_to_solve_query" in reply:
+                send(f"customer {sender} is not satisfied",owner_phone,phone_id)
+                send("Our agent will contact you shortly.",sender,phone_id)
+            else:send(reply,sender,phone_id)
+        except:pass
         return jsonify({"status": "ok"}), 200
+    else:return "WhatsApp Bot is Running"
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
