@@ -230,7 +230,7 @@ def webhook():
                         reply=reply.replace(f"{i}_image",'\n')
                         image=i.replace("_"," ")
                         try:
-                            product_path = os.path.join("product_images", f"'{image}'.jpg")
+                            product_path = os.path.join("product_images", f"{image}.jpg")
                         except:send("An error occurred while loading the image",sender,phone_id)
                         if os.path.exists(product_path):send_media(product_path,sender,phone_id)
                         else:send("Unable to load images",sender,phone_id)
