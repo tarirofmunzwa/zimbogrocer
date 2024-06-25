@@ -156,6 +156,70 @@ if db:
     notification=lambda message,phone_id:send(message,owner_phone,phone_id)
 else:pass
 
+def message_handler(data,phone_id):
+    sender=data["from"]
+    if data["type"] == "text":
+        prompt = data["text"]["body"]
+        convo.send_message(prompt)
+    else:
+        media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
+        headers = {'Authorization': f'Bearer {wa_token}'}
+        media_response = requests.get(media_url_endpoint, headers=headers)
+        media_url = media_response.json()["url"]
+        media_download_response = requests.get(media_url, headers=headers)
+        if data["type"] == "audio":filename = "/tmp/temp_audio.mp3"
+        elif data["type"] == "image":filename = "/tmp/temp_image.jpg"
+        elif data["type"] == "document":
+            doc=fitz.open(stream=media_download_response.content,filetype="pdf")
+            for _,page in enumerate(doc):
+                destination="/tmp/temp_image.jpg"
+                pix = page.get_pixmap()
+                pix.save(destination)
+                file = genai.upload_file(path=destination,display_name="tempfile")
+                response = model.generate_content(["What is this",file])
+                answer=response._result.candidates[0].content.parts[0].text
+                convo.send_message(f'''Direct image input has limitations,
+                                       so this message is created by an llm model based on the image prompt of user, 
+                                       reply to the customer assuming you saw that image 
+                                       (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+                remove(destination)
+        else:send("This format is not Supported by the bot ☹",sender,phone_id)
+        if data["type"] == "image" or data["type"] == "audio":
+            with open(filename, "wb") as temp_media:
+                temp_media.write(media_download_response.content)
+            file = genai.upload_file(path=filename,display_name="tempfile")
+            response = model.generate_content(["What is this",file])
+            answer=response._result.candidates[0].content.parts[0].text
+            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+            convo.send_message(f'''Direct media input has limitations,
+                               so this message is created by an llm model based on the image prompt of user, 
+                               reply to the customer assuming you saw that image 
+                               (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+        files=genai.list_files()
+        for file in files:
+            file.delete()
+    reply=convo.last.text
+    if "unable_to_solve_query" in reply:
+        send(f"customer {sender} is not satisfied", owner_phone, phone_id)
+        reply=reply.replace("unable_to_solve_query",'\n')
+        send(reply, sender, phone_id)
+            
+    elif any(f'{i}_image' in reply for i in product_images):
+        for i in product_images:
+            if f'{i}_image' in reply:
+                reply=reply.replace(f"{i}_image",'\n')
+                image=i.replace("_"," ")
+                try:
+                    product_path = os.path.join("product_images", f"{image}.jpg")
+                except:send("An error occurred while loading the image",sender,phone_id)
+                if os.path.exists(product_path):send_media(product_path,sender,phone_id)
+                else:send("Unable to load images",sender,phone_id)
+                break
+        send(reply, sender, phone_id)
+        
+    else:send(reply,sender,phone_id)
+    
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("connected.html")
@@ -175,79 +239,7 @@ def webhook():
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
             phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
             p_id=phone_id
-            sender=data["from"]
-            if data["type"] == "text":
-                prompt = data["text"]["body"]
-                convo.send_message(prompt)
-            else:
-                media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
-                headers = {'Authorization': f'Bearer {wa_token}'}
-                media_response = requests.get(media_url_endpoint, headers=headers)
-                media_url = media_response.json()["url"]
-                media_download_response = requests.get(media_url, headers=headers)
-                if data["type"] == "audio":
-                    filename = "/tmp/temp_audio.mp3"
-                elif data["type"] == "image":
-                    filename = "/tmp/temp_image.jpg"
-                elif data["type"] == "document":
-                    doc=fitz.open(stream=media_download_response.content,filetype="pdf")
-                    for _,page in enumerate(doc):
-                        destination="/tmp/temp_image.jpg"
-                        pix = page.get_pixmap()
-                        pix.save(destination)
-                        file = genai.upload_file(path=destination,display_name="tempfile")
-                        response = model.generate_content(["What is this",file])
-                        answer=response._result.candidates[0].content.parts[0].text
-                        convo.send_message(f'''Direct image input has limitations,
-                                           so this message is created by an llm model based on the image prompt of user, 
-                                            reply to the customer assuming you saw that image 
-                                           (Warn the customer and stop the chat if it is not related to the business): {answer}''')
-                        remove(destination)
-                else:send("This format is not Supported by the bot ☹",sender,phone_id)
-                if data["type"] == "image" or data["type"] == "audio":
-                    with open(filename, "wb") as temp_media:
-                        temp_media.write(media_download_response.content)
-                    file = genai.upload_file(path=filename,display_name="tempfile")
-                    response = model.generate_content(["What is this",file])
-                    answer=response._result.candidates[0].content.parts[0].text
-                    remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
-                    convo.send_message(f'''Direct media input has limitations,
-                                            so this message is created by an llm model based on the image prompt of user, 
-                                            reply to the customer assuming you saw that image 
-                                            (Warn the customer and stop the chat if it is not related to the business): {answer}''')
-                files=genai.list_files()
-                for file in files:
-                    file.delete()
-            reply=convo.last.text
-            if "unable_to_solve_query" in reply:
-                send(f"customer {sender} is not satisfied", owner_phone, phone_id)
-                reply=reply.replace("unable_to_solve_query",'\n')
-                send(reply, sender, phone_id)
-            
-            elif any(f'{i}_image' in reply for i in product_images):
-                for i in product_images:
-                    if f'{i}_image' in reply:
-                        reply=reply.replace(f"{i}_image",'\n')
-                        image=i.replace("_"," ")
-                        try:
-                            product_path = os.path.join("product_images", f"{image}.jpg")
-                        except:send("An error occurred while loading the image",sender,phone_id)
-                        if os.path.exists(product_path):send_media(product_path,sender,phone_id)
-                        else:send("Unable to load images",sender,phone_id)
-                        break
-                send(reply, sender, phone_id)
-
-                """ elif "show_images" in reply:
-                reply=reply.replace("show_images",'\n')
-                send(reply, sender, phone_id)
-                if len(os.listdir("product_images"))!=0:
-                    for i in os.listdir("product_images"):
-                        products_path = os.path.join("product_images", i)
-                        if os.path.exists(products_path):send_media(products_path, sender, phone_id)
-                        else:send("Unable to load images", sender, phone_id)
-                else:send("No images found",sender,phone_id) """
-
-            else:send(reply,sender,phone_id)
+            message_handler(data,phone_id)
         except :pass
         return jsonify({"status": "ok"}), 200
     else:return "WhatsApp Bot is Running"
