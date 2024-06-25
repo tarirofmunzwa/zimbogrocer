@@ -3,11 +3,23 @@ from flask import Flask,request,jsonify,render_template
 import requests
 import os
 import fitz
+from mimetypes import guess_type
+import psycopg2
+from datetime import datetime,timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from pathlib import Path
 
-wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
-gen_api=os.environ.get("GEN_API") # Gemini API Key
-owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
+db=False
+send_report=False
+wa_token="EAAWWnSIizyIBO32TBqdFXM6iUsdDDFB0iZBnnNjihZC2Kkhty2ebUxAt8WcUElZAR58b5clp1j4fBFpUTxjZBgZApVAZBvZAI27mosGPEORaszbHv4U6Rp5ZBSqwhnxSYtOsrCoN7dwtbnH1KfR3b8tXBSQmctDHjZAUhpQrgmOIp1dKp23XLhY4jGnq4D9FiM8pH"#os.environ.get("WA_TOKEN") # Whatsapp API Key
+gen_api="AIzaSyAvG8qtv4ePMRavnOlAS4Ty3ZF28dKLpYA"#os.environ.get("GEN_API") # Gemini API Key
+owner_phone="+918848278440"#os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
 model_name="gemini-1.5-flash-latest"
+
+folder=Path("product_images")
+product_images=[file.stem for file in folder.iterdir() if file.is_file()]
+product_images=list(map(lambda i:i.replace(" ","_"),product_images))
+p_id=False
 
 app=Flask(__name__)
 genai.configure(api_key=gen_api)
@@ -29,12 +41,12 @@ model = genai.GenerativeModel(model_name=model_name,
                               generation_config=generation_config,
                               safety_settings=safety_settings)
 
-convo = model.start_chat(history=[
-])
+convo = model.start_chat(history=[])
 
 with open("instructions.txt","r") as f:
     commands=f.read()
 convo.send_message(commands)
+
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
@@ -44,18 +56,108 @@ def send(answer,sender,phone_id):
     }
     data = {
         "messaging_product": "whatsapp",
-        "to": f"{sender}",
+        "to": sender,
         "type": "text",
-        "text": {"body": f"{answer}"},
+        "text": {"body": answer},
     }
     response = requests.post(url, headers=headers, json=data)
     return response
+
+
+def send_media(filename,sender,phone_id):
+    file_type=guess_type(filename)[0]
+    url_upload=f"https://graph.facebook.com/v20.0/{phone_id}/media"
+    headers={
+        'Authorization':f'Bearer {wa_token}'
+    }
+    files={
+        'file':('file',open(filename,'rb'),file_type)
+    }
+    data={
+        'messaging_product':'whatsapp',
+        'type':file_type
+    }
+    response1=requests.post(url_upload,headers=headers,files=files,data=data)
+    if response1.status_code==200:
+        media_id=response1.json()["id"]
+        url_send=f"https://graph.facebook.com/v19.0/{phone_id}/messages"
+        headers2={
+            'Authorization':f'Bearer {wa_token}',
+            'Content-Type':'application/json'
+        }
+        data = {
+            "messaging_product": "whatsapp",
+            "to": sender,
+            "type": file_type.split("/")[0],
+            file_type.split("/")[0]: {
+                "id": media_id,
+                "caption":(filename.split("\\")[1]).split(".")[0]
+            }
+        }
+        response2=requests.post(url_send, headers=headers2, json=data)
+        if response2.status_code==200:
+            url_delete=f"https://graph.facebook.com/v20.0/{media_id}"
+            requests.delete(url_delete,headers=headers)
+
+    else:print("send_media function failed to send image")
 
 def remove(*file_paths):
     for file in file_paths:
         if os.path.exists(file):
             os.remove(file)
         else:pass
+
+if db:
+    db_url=os.environ.get("POSTGRES_URL") # Database URL
+    connect=psycopg2.connect(db_url)
+    cursor=connect.cursor()
+
+    def insert_chat(sender,message):
+        cursor.execute("INSERT INTO chats (sender,message) VALUES (%s,%s)",(sender,message))
+        connect.commit()
+        cursor.close()
+
+    def get_chats(sender):
+        cursor.execute("SELECT chat_text FROM chats WHERE sender = %s", (sender,))
+        chats=cursor.fetchall()
+        cursor.close()
+        return chats
+    
+    def delete_old_chats():
+        cutoff_date = datetime.now() - timedelta(days=14)
+        cursor.execute("DELETE FROM chats WHERE timestamp < %s", (cutoff_date,))
+        connect.commit()
+        cursor.close()
+    
+    def create_report():
+        today=datetime.today().strftime('%d-%m-%Y')
+        query = f"SELECT chat_content FROM chats WHERE date_trunc('day', chat_timestamp) = %s"
+        cursor.execute(query, (today,))
+        chats = cursor.fetchall()
+        doc = fitz.open()
+        page = doc.new_page()
+        text = f"Chat Report for {today}\n\n"
+        for content in chats:
+            text += f"{content[0]}\n\n"
+        page.insert_text((100, 100), text)
+        path=f"/tmp/chat_report_{today}.pdf"
+        doc.save(path)
+        doc.close()
+        cursor.close()
+        connect.close()
+        return path
+
+    def send_daily_report(phone_id):
+        pdf_path = create_report()
+        if pdf_path:
+            send_media(pdf_path,owner_phone,phone_id)
+        else:
+            print("Failed to create PDF report.")
+
+else:pass
+
+notification=lambda message,phone_id:send(message,owner_phone,phone_id)
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -75,12 +177,13 @@ def webhook():
         try:
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
             phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
+            p_id=phone_id
             sender=data["from"]
             if data["type"] == "text":
                 prompt = data["text"]["body"]
                 convo.send_message(prompt)
             else:
-                media_url_endpoint = f'https://graph.facebook.com/v18.0/{data[data["type"]]["id"]}/'
+                media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
                 headers = {'Authorization': f'Bearer {wa_token}'}
                 media_response = requests.get(media_url_endpoint, headers=headers)
                 media_url = media_response.json()["url"]
@@ -120,11 +223,46 @@ def webhook():
                     file.delete()
             reply=convo.last.text
             if "unable_to_solve_query" in reply:
-                send(f"customer {sender} is not satisfied",owner_phone,phone_id)
-                send("Our agent will contact you shortly.",sender,phone_id)
+                send(f"customer {sender} is not satisfied", owner_phone, phone_id)
+                reply=reply.replace("unable_to_solve_query",'\n')
+                send(reply, sender, phone_id)
+            
+            elif any(f'{i}_image' in reply for i in product_images):
+                for i in product_images:
+                    if f'{i}_image' in reply:
+                        reply=reply.replace(f"{i}_image",'\n')
+                        image=i.replace("_"," ")
+                        try:
+                            product_path = os.path.join("product_images", f"{image}.jpg")
+                        except:send("An error occurred while loading the image",sender,phone_id)
+                        if os.path.exists(product_path):send_media(product_path,sender,phone_id)
+                        else:send("Unable to load images",sender,phone_id)
+                        break
+                send(reply, sender, phone_id)
+
+                """ elif "show_images" in reply:
+                reply=reply.replace("show_images",'\n')
+                send(reply, sender, phone_id)
+                if len(os.listdir("product_images"))!=0:
+                    for i in os.listdir("product_images"):
+                        products_path = os.path.join("product_images", i)
+                        if os.path.exists(products_path):send_media(products_path, sender, phone_id)
+                        else:send("Unable to load images", sender, phone_id)
+                else:send("No images found",sender,phone_id) """
+
             else:send(reply,sender,phone_id)
         except :pass
         return jsonify({"status": "ok"}), 200
     else:return "WhatsApp Bot is Running"
+
+if not db and p_id:
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=notification, trigger='cron', hour=16, minute=45, args=["⚠You are not connected to the database⚠",p_id])
+elif db:
+    today=datetime.today().strftime('%d-%m-%Y')
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=send_daily_report, trigger='cron', hour=22, minute=59)
+    scheduler.add_job(func=remove, trigger='cron', hour=23, minute=5, args=[f"/tmp/chat_report_{today}.pdf"])
+    scheduler.start()
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
