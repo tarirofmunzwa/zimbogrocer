@@ -11,15 +11,15 @@ from pathlib import Path
 
 db=False
 send_report=False
-wa_token="EAAWWnSIizyIBO32TBqdFXM6iUsdDDFB0iZBnnNjihZC2Kkhty2ebUxAt8WcUElZAR58b5clp1j4fBFpUTxjZBgZApVAZBvZAI27mosGPEORaszbHv4U6Rp5ZBSqwhnxSYtOsrCoN7dwtbnH1KfR3b8tXBSQmctDHjZAUhpQrgmOIp1dKp23XLhY4jGnq4D9FiM8pH"#os.environ.get("WA_TOKEN") # Whatsapp API Key
-gen_api="AIzaSyAvG8qtv4ePMRavnOlAS4Ty3ZF28dKLpYA"#os.environ.get("GEN_API") # Gemini API Key
-owner_phone="+918848278440"#os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
+p_id=False
+wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
+gen_api=os.environ.get("GEN_API") # Gemini API Key
+owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
 model_name="gemini-1.5-flash-latest"
 
 folder=Path("product_images")
 product_images=[file.stem for file in folder.iterdir() if file.is_file()]
 product_images=list(map(lambda i:i.replace(" ","_"),product_images))
-p_id=False
 
 app=Flask(__name__)
 genai.configure(api_key=gen_api)
@@ -153,11 +153,8 @@ if db:
             send_media(pdf_path,owner_phone,phone_id)
         else:
             print("Failed to create PDF report.")
-
+    notification=lambda message,phone_id:send(message,owner_phone,phone_id)
 else:pass
-
-notification=lambda message,phone_id:send(message,owner_phone,phone_id)
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -233,7 +230,7 @@ def webhook():
                         reply=reply.replace(f"{i}_image",'\n')
                         image=i.replace("_"," ")
                         try:
-                            product_path = os.path.join("product_images", f"{image}.jpg")
+                            product_path = os.path.join("product_images", f"'{image}'.jpg")
                         except:send("An error occurred while loading the image",sender,phone_id)
                         if os.path.exists(product_path):send_media(product_path,sender,phone_id)
                         else:send("Unable to load images",sender,phone_id)
