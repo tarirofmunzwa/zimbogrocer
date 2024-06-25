@@ -12,6 +12,7 @@ from pathlib import Path
 db=False
 send_report=False
 p_id=False
+info=False
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
@@ -219,6 +220,9 @@ def message_handler(data,phone_id):
         
     else:send(reply,sender,phone_id)
     
+def take_data(data,phone_id):
+    return [data,phone_id]
+    
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -239,10 +243,14 @@ def webhook():
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
             phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
             p_id=phone_id
-            message_handler(data,phone_id)
+            info=take_data(data,phone_id)
         except :pass
         return jsonify({"status": "ok"}), 200
     else:return "WhatsApp Bot is Running"
+    
+if info:
+    message_handler(info[0],info[1])
+
 
 if not db and p_id:
     scheduler = BackgroundScheduler()
