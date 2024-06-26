@@ -10,9 +10,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from pathlib import Path
 
 db=False
-wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
-gen_api=os.environ.get("GEN_API") # Gemini API Key
-owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
+send_report=False
+wa_token="EAAWWnSIizyIBO32TBqdFXM6iUsdDDFB0iZBnnNjihZC2Kkhty2ebUxAt8WcUElZAR58b5clp1j4fBFpUTxjZBgZApVAZBvZAI27mosGPEORaszbHv4U6Rp5ZBSqwhnxSYtOsrCoN7dwtbnH1KfR3b8tXBSQmctDHjZAUhpQrgmOIp1dKp23XLhY4jGnq4D9FiM8pH"#os.environ.get("WA_TOKEN") # Whatsapp API Key
+gen_api="AIzaSyAvG8qtv4ePMRavnOlAS4Ty3ZF28dKLpYA"#os.environ.get("GEN_API") # Gemini API Key
+owner_phone="+918848278440"#os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
 model_name="gemini-1.5-flash-latest"
 
 folder=Path("product_images")
@@ -151,8 +152,10 @@ if db:
             send_media(pdf_path,owner_phone,phone_id)
         else:
             print("Failed to create PDF report.")
-    notification=lambda message,phone_id:send(message,owner_phone,phone_id)
+
 else:pass
+
+notification=lambda message,phone_id:send(message,owner_phone,phone_id)
 
 def message_handler(data,phone_id):
     sender=data["from"]
@@ -165,8 +168,10 @@ def message_handler(data,phone_id):
         media_response = requests.get(media_url_endpoint, headers=headers)
         media_url = media_response.json()["url"]
         media_download_response = requests.get(media_url, headers=headers)
-        if data["type"] == "audio":filename = "/tmp/temp_audio.mp3"
-        elif data["type"] == "image":filename = "/tmp/temp_image.jpg"
+        if data["type"] == "audio":
+            filename = "/tmp/temp_audio.mp3"
+        elif data["type"] == "image":
+            filename = "/tmp/temp_image.jpg"
         elif data["type"] == "document":
             doc=fitz.open(stream=media_download_response.content,filetype="pdf")
             for _,page in enumerate(doc):
@@ -177,9 +182,9 @@ def message_handler(data,phone_id):
                 response = model.generate_content(["What is this",file])
                 answer=response._result.candidates[0].content.parts[0].text
                 convo.send_message(f'''Direct image input has limitations,
-                                       so this message is created by an llm model based on the image prompt of user, 
-                                       reply to the customer assuming you saw that image 
-                                       (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+                                    so this message is created by an llm model based on the image prompt of user, 
+                                    reply to the customer assuming you saw that image 
+                                    (Warn the customer and stop the chat if it is not related to the business): {answer}''')
                 remove(destination)
         else:send("This format is not Supported by the bot ☹",sender,phone_id)
         if data["type"] == "image" or data["type"] == "audio":
@@ -190,9 +195,9 @@ def message_handler(data,phone_id):
             answer=response._result.candidates[0].content.parts[0].text
             remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
             convo.send_message(f'''Direct media input has limitations,
-                               so this message is created by an llm model based on the image prompt of user, 
-                               reply to the customer assuming you saw that image 
-                               (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+                                    so this message is created by an llm model based on the image prompt of user, 
+                                    reply to the customer assuming you saw that image 
+                                    (Warn the customer and stop the chat if it is not related to the business): {answer}''')
         files=genai.list_files()
         for file in files:
             file.delete()
@@ -201,7 +206,7 @@ def message_handler(data,phone_id):
         send(f"customer {sender} is not satisfied", owner_phone, phone_id)
         reply=reply.replace("unable_to_solve_query",'\n')
         send(reply, sender, phone_id)
-            
+    
     elif any(f'{i}_image' in reply for i in product_images):
         for i in product_images:
             if f'{i}_image' in reply:
@@ -214,8 +219,19 @@ def message_handler(data,phone_id):
                 else:send("Unable to load images",sender,phone_id)
                 break
         send(reply, sender, phone_id)
-        
+
+        """ elif "show_images" in reply:
+        reply=reply.replace("show_images",'\n')
+        send(reply, sender, phone_id)
+        if len(os.listdir("product_images"))!=0:
+            for i in os.listdir("product_images"):
+                products_path = os.path.join("product_images", i)
+                if os.path.exists(products_path):send_media(products_path, sender, phone_id)
+                else:send("Unable to load images", sender, phone_id)
+        else:send("No images found",sender,phone_id) """
+
     else:send(reply,sender,phone_id)
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -235,7 +251,6 @@ def webhook():
         try:
             data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
             phone_id=request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
-            p_id=phone_id
             message_handler(data,phone_id)
         except :pass
         return jsonify({"status": "ok"}), 200
