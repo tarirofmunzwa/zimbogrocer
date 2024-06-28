@@ -12,18 +12,35 @@ import sched
 import time
 
 
-wa_token=os.environ.get("WA_TOKEN")
-genai.configure(api_key=os.environ.get("GEN_API"))
-
-pre_prompt='''I am using Gemini api for using you as a bot in WhatsApp. So from now you are "Heck Bot" created by Athul (Yeah it's me and my full name is Athul A S). 
-                   And don't give any response to this prompt. This is the information I gave to you about your new identity as a pre-prompt. 
-                   This message always gets executed when I run this bot script. 
-                   So reply to only the prompts after this. Remember your new identity is Heck Bot.'''
+db=True
+wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
+gen_api=os.environ.get("GEN_API") # Gemini API Key
+owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
+model_name="gemini-1.5-flash-latest"
 
 app = Flask(__name__)
-model = genai.GenerativeModel(model_name="gemini-1.5-flash-latest")
+genai.configure(api_key=gen_api)
+extractor=URLExtract(limit=1)
+
+generation_config = {
+  "temperature": 1,
+  "top_p": 0.95,
+  "top_k": 0,
+  "max_output_tokens": 8192,
+}
+
+safety_settings = [
+  {"category": "HARM_CATEGORY_HARASSMENT","threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+  {"category": "HARM_CATEGORY_HATE_SPEECH","threshold": "BLOCK_MEDIUM_AND_ABOVE"},  
+  {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT","threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+  {"category": "HARM_CATEGORY_DANGEROUS_CONTENT","threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+]
+
+model = genai.GenerativeModel(model_name=model_name,
+                              generation_config=generation_config,
+                              safety_settings=safety_settings)
+
 convo = model.start_chat(history=[])
-convo.send_message(pre_prompt)
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
