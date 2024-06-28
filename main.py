@@ -1,8 +1,16 @@
 import google.generativeai as genai
-from flask import Flask,request,jsonify
+from flask import Flask,request,jsonify,render_template
 import requests
 import os
 import fitz
+from mimetypes import guess_type
+import psycopg2
+from datetime import datetime,timedelta
+from urlextract import URLExtract
+from training import instructions
+import sched
+import time
+
 
 wa_token=os.environ.get("WA_TOKEN")
 genai.configure(api_key=os.environ.get("GEN_API"))
