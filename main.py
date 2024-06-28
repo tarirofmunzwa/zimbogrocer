@@ -195,7 +195,7 @@ def message_handler(data,phone_id):
     else:send(reply,sender,phone_id)
     if db:
         scheduler.enterabs(report_time.timestamp(), 1, create_report, (phone_id,))
-        scheduler.run()
+        scheduler.run(blocking=False)
         delete_old_chats()
         
 @app.route("/", methods=["GET", "POST"])
