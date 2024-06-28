@@ -131,7 +131,7 @@ def message_handler(data,phone_id):
     sender=data["from"]
     if data["type"] == "text":
         prompt = data["text"]["body"]
-        insert_chat(sender,prompt)
+        if db:insert_chat(sender,prompt)
         convo.send_message(prompt)
     else:
         media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
@@ -186,6 +186,17 @@ def message_handler(data,phone_id):
         files=genai.list_files()
         for file in files:
             file.delete()
+    reply=convo.last.text
+    if "unable_to_solve_query" in reply:
+        send(f"customer {sender} is not satisfied", owner_phone, phone_id)
+        reply=reply.replace("unable_to_solve_query",'\n')
+        send(reply, sender, phone_id)
+    else:send(reply,sender,phone_id)
+    if db:
+        scheduler.enterabs(report_time.timestamp(), 1, create_report, (phone_id,))
+        scheduler.run()
+        delete_old_chats()
+        
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("connected.html")
