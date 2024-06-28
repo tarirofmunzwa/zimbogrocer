@@ -4,14 +4,16 @@ import requests
 import os
 import fitz
 from mimetypes import guess_type
-import psycopg2
 from datetime import datetime,timedelta
 from urlextract import URLExtract
 from training import instructions
 import sched
 import time
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-db=False
+db=True
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
@@ -90,25 +92,29 @@ def remove(*file_paths):
 
 if db:
     db_url=os.environ.get("DB_URL") # Database URL
-    connect=psycopg2.connect(db_url)
-    cursor=connect.cursor()
+    engine=create_engine(db_url)
+    Session=sessionmaker(bind=engine)
+    Base=declarative_base()
     scheduler = sched.scheduler(time.time, time.sleep)
     report_time = datetime.now().replace(hour=22, minute=00, second=0, microsecond=0)
 
-    def insert_chat(sender,message):
+    class Chat(Base):
+        __tablename__ = 'chats'
+        Order = Column(Integer, primary_key=True)
+        Sender = Column(String(255), nullable=False)
+        Message = Column(String, nullable=False)
+        Chat_time = Column(DateTime, default=datetime.utcnow)
+
+    def insert_chat(sender, message):
         try:
-            cursor.execute('''CREATE TABLE IF NOT EXISTS chats(
-                Order SERIAL PRIMARY KEY,
-                Sender VARCHAR(255) NOT NULL,
-                Message TEXT NOT NULL,
-                Chat_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );''')
-            cursor.execute("INSERT INTO chats (sender,message) VALUES (%s,%s)",(sender,message))
-            connect.commit()
-        except:
-            cursor.rollback()
+            session = Session()
+            chat = Chat(Sender=sender, Message=message)
+            session.add(chat)
+            session.commit()
+        except Exception as e:
+            session.rollback()
         finally:
-            cursor.close()
+            session.close()
 
     def get_chats(sender):
         cursor.execute("SELECT chat_text FROM chats WHERE sender = %s", (sender,))
@@ -204,7 +210,6 @@ def message_handler(data,phone_id):
         send(reply, sender, phone_id)
     else:send(reply,sender,phone_id)
     if db:
-        insert_chat(owner_phone,reply)
         scheduler.enterabs(report_time.timestamp(), 1, create_report, (phone_id,))
         scheduler.run(blocking=False)
         delete_old_chats()
