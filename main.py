@@ -162,7 +162,7 @@ def message_handler(data,phone_id):
             with open(filename, "wb") as temp_media:
                 temp_media.write(media_download_response.content)
             file = genai.upload_file(path=filename,display_name="tempfile")
-           if data["type"] == "image":
+            if data["type"] == "image":
                 response = model.generate_content(["What is in this image?",file])
                 answer=response.text
                 convo.send_message(f'''Customer has sent an image,
