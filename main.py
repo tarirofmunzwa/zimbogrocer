@@ -100,7 +100,7 @@ if db:
 
     class Chat(Base):
         __tablename__ = 'chats'
-        Order = Column(Integer, primary_key=True)
+        Chat_no = Column(Integer, primary_key=True)
         Sender = Column(String(255), nullable=False)
         Message = Column(String, nullable=False)
         Chat_time = Column(DateTime, default=datetime.utcnow)
@@ -117,27 +117,38 @@ if db:
             session.close()
 
     def get_chats(sender):
-        cursor.execute("SELECT chat_text FROM chats WHERE sender = %s", (sender,))
-        chats=cursor.fetchall()
-        cursor.close()
-        return chats
-    
+        try:
+            session = Session()
+            chats = session.query(Chat.Message).filter(Chat.Sender == sender).all()
+            return chats
+        except:pass
+        finally:
+            session.close()
+
+
     def delete_old_chats():
-        cutoff_date = datetime.now() - timedelta(days=14)
-        cursor.execute("DELETE FROM chats WHERE timestamp < %s", (cutoff_date,))
-        connect.commit()
-        cursor.close()
-    
-    def create_report(phone_id):
-        today=datetime.today().strftime('%d-%m-%Y')
-        query = f"SELECT chat_content FROM chats WHERE date_trunc('day', chat_timestamp) = %s"
-        cursor.execute(query, (today,))
-        chats = cursor.fetchall()
-        if chats !="":
-            chats=today+"\n\n"+chats
-            send(chats,owner_phone,phone_id)
-        cursor.close()
-        connect.close()
+        try:
+            session = Session()
+            cutoff_date = datetime.now() - timedelta(days=14)
+            session.query(Chat).filter(Chat.Chat_time < cutoff_date).delete()
+            session.commit()
+        except:
+            session.rollback()
+        finally:
+            session.close()
+
+def create_report(phone_id):
+    try:
+        today = datetime.today().strftime('%d-%m-%Y')
+        session = Session()
+        query = session.query(Chat.Message).filter(func.date_trunc('day', Chat.Chat_time) == today).all()
+        if query:
+            chats = '\n\n'.join(query)
+            send(chats, owner_phone, phone_id)
+    except:pass
+    finally:
+        session.close()
+
 
 else:pass
 
