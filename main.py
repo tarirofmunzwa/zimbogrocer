@@ -9,9 +9,12 @@ from urlextract import URLExtract
 from training import instructions
 import sched
 import time
+import logging
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+logging.basicConfig(level=logging.INFO)
 
 db=True
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
@@ -80,8 +83,7 @@ def send(answer,sender,phone_id):
         },
     }
     response = requests.post(url, headers=headers, json=data)
-    if db:
-        insert_chat("Bot",answer)
+    if db:insert_chat("Bot",answer)
     return response
 
 def remove(*file_paths):
@@ -105,15 +107,19 @@ if db:
         Message = Column(String, nullable=False)
         Chat_time = Column(DateTime, default=datetime.utcnow)
 
+    logging.info("Creating tables if they do not exist...")
     Base.metadata.create_all(engine)
     
     def insert_chat(sender, message):
+        logging.info("Inserting chat into database")
         try:
             session = Session()
             chat = Chat(Sender=sender, Message=message)
             session.add(chat)
             session.commit()
+            logging.info("Chat inserted successfully")
         except Exception as e:
+            logging.error(f"Error inserting chat: {e}")
             session.rollback()
         finally:
             session.close()
@@ -134,12 +140,15 @@ if db:
             cutoff_date = datetime.now() - timedelta(days=14)
             session.query(Chat).filter(Chat.Chat_time < cutoff_date).delete()
             session.commit()
+            logging.info("Old chats deleted successfully")
         except:
+            logging.error(f"Error deleting old chats: {e}")
             session.rollback()
         finally:
             session.close()
 
     def create_report(phone_id):
+        logging.info("Creating report")
         try:
             today = datetime.today().strftime('%d-%m-%Y')
             session = Session()
@@ -147,7 +156,7 @@ if db:
             if query:
                 chats = '\n\n'.join(query)
                 send(chats, owner_phone, phone_id)
-        except:pass
+        except:logging.error(f"Error creating report: {e}")
         finally:
             session.close()
             
