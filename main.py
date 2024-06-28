@@ -7,8 +7,6 @@ from mimetypes import guess_type
 import psycopg2
 from datetime import datetime,timedelta
 from urlextract import URLExtract
-from  PIL import Image
-from io import BytesIO
 from training import instructions
 import sched
 import time
@@ -171,7 +169,10 @@ def message_handler(data,phone_id):
                 if len(urls)>0:
                     headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
                     response=requests.get(urls[0],headers=headers)
-                    img=Image.open(BytesIO(response.content))
+                    img_path="/tmp/prod_image.jpg"
+                    with open(img_path, "wb") as temp_media:
+                        temp_media.write(response.content)
+                    img=genai.upload_file(path=img_path,display_name="prodfile")
                     response=model.generate_content(["Is the things in both the images are exactly same? Explain in detail",img,file])
                     answer=response.text
                     convo.send_message(f'''This is the message from AI after comparing the two images: {answer}''')
@@ -182,7 +183,7 @@ def message_handler(data,phone_id):
                                             so this message is created by an llm model based on the audio send by the user, 
                                             reply to the customer assuming you heard that audio.
                                             (Warn the customer and stop the chat if it is not related to the business): {answer}''')
-            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3","/tmp/prod_image.jpg")
         files=genai.list_files()
         for file in files:
             file.delete()
