@@ -7,6 +7,7 @@ from mimetypes import guess_type
 import psycopg2
 from datetime import datetime,timedelta
 from urlextract import URLExtract
+from urlextract.cachefile import CacheFile
 from training import instructions
 import sched
 import time
@@ -20,8 +21,14 @@ model_name="gemini-1.5-flash-latest"
 
 app = Flask(__name__)
 genai.configure(api_key=gen_api)
-extractor=URLExtract(limit=1,cache_dns=False)
+class CustomURLExtract(URLExtract):
+    def _get_cache_file_path(self):
+        cache_file_handler = CacheFile()
+        cache_dir = cache_file_handler._get_writable_cache_dir()
+        os.makedirs(cache_dir, exist_ok=True)
+        return os.path.join(cache_dir, "tlds-alpha-by-domain.txt")
 
+extractor = CustomURLExtract(limit=1)
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
