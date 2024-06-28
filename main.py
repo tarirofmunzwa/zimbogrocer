@@ -11,7 +11,7 @@ from training import instructions
 import sched
 import time
 
-db=False
+db=True
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
@@ -89,7 +89,7 @@ def remove(*file_paths):
         else:pass
 
 if db:
-    db_url=os.environ.get("POSTGRES_URL") # Database URL
+    db_url=os.environ.get("DB_URL") # Database URL
     connect=psycopg2.connect(db_url)
     cursor=connect.cursor()
     scheduler = sched.scheduler(time.time, time.sleep)
