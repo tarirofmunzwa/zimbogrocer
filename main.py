@@ -137,19 +137,18 @@ if db:
         finally:
             session.close()
 
-def create_report(phone_id):
-    try:
-        today = datetime.today().strftime('%d-%m-%Y')
-        session = Session()
-        query = session.query(Chat.Message).filter(func.date_trunc('day', Chat.Chat_time) == today).all()
-        if query:
-            chats = '\n\n'.join(query)
-            send(chats, owner_phone, phone_id)
-    except:pass
-    finally:
-        session.close()
-
-
+    def create_report(phone_id):
+        try:
+            today = datetime.today().strftime('%d-%m-%Y')
+            session = Session()
+            query = session.query(Chat.Message).filter(func.date_trunc('day', Chat.Chat_time) == today).all()
+            if query:
+                chats = '\n\n'.join(query)
+                send(chats, owner_phone, phone_id)
+        except:pass
+        finally:
+            session.close()
+            
 else:pass
 
 def message_handler(data,phone_id):
