@@ -20,7 +20,7 @@ model_name="gemini-1.5-flash-latest"
 
 app = Flask(__name__)
 genai.configure(api_key=gen_api)
-#extractor=URLExtract(limit=1)
+extractor=URLExtract(limit=1,cache_dns=False)
 
 generation_config = {
   "temperature": 1,
