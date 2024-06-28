@@ -23,9 +23,7 @@ app = Flask(__name__)
 genai.configure(api_key=gen_api)
 class CustomURLExtract(URLExtract):
     def _get_cache_file_path(self):
-        cache_file_handler = CacheFile()
-        cache_dir = cache_file_handler._get_writable_cache_dir()
-        os.makedirs(cache_dir, exist_ok=True)
+        cache_dir = "/tmp"
         return os.path.join(cache_dir, "tlds-alpha-by-domain.txt")
 
 extractor = CustomURLExtract(limit=1)
