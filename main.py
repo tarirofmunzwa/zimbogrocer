@@ -60,13 +60,28 @@ def send(answer,sender,phone_id):
         'Authorization': f'Bearer {wa_token}',
         'Content-Type': 'application/json'
     }
+    type="text"
+    body="body"
+    content=answer
+    urls=extractor.find_urls(answer)
+    if len(urls)>0:
+        mime_type,_=guess_type(urls[0].split("/")[-1])
+        type=mime_type.split("/")[0]
+        body="link"
+        content=urls[0]
+        answer=answer.replace(urls[0],"\n")
     data = {
         "messaging_product": "whatsapp",
-        "to": f"{sender}",
-        "type": "text",
-        "text": {"body": f"{answer}"},
+        "to": sender,
+        "type": type,
+        type: {
+            body:content,
+            **({"caption":answer} if type!="text" else {})
+        },
     }
     response = requests.post(url, headers=headers, json=data)
+    if db:
+        insert_chat("Bot",answer)
     return response
 
 def remove(*file_paths):
@@ -77,7 +92,7 @@ def remove(*file_paths):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return "Vercel"
+    return render_template("connected.html")
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
