@@ -162,16 +162,19 @@ def message_handler(data,phone_id):
             with open(filename, "wb") as temp_media:
                 temp_media.write(media_download_response.content)
             file = genai.upload_file(path=filename,display_name="tempfile")
-            if data["type"] == "image":
+           if data["type"] == "image":
                 response = model.generate_content(["What is in this image?",file])
                 answer=response.text
                 convo.send_message(f'''Customer has sent an image,
                                     So here is the llm's reply based on the image sent by the customer:{answer}\n\n''')
                 urls=extractor.find_urls(convo.last.text)
                 if len(urls)>0:
-                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-                    response=requests.get(urls[0],headers=headers)
-                    img=Image.open(BytesIO(response.content))
+                    headers_new={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+                    prod_response=requests.get(urls[0],headers=headers_new)
+                    img_path="/tmp/prod_image.jpg"
+                    with open(img_path, "wb") as temp_media:
+                        temp_media.write(prod_response.content)
+                    img = genai.upload_file(path=filename,display_name="tempfile")
                     response=model.generate_content(["Is the things in both the images are exactly same? Explain in detail",img,file])
                     answer=response.text
                     convo.send_message(f'''This is the message from AI after comparing the two images: {answer}''')
