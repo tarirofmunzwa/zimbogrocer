@@ -22,6 +22,13 @@ model_name="gemini-1.5-flash-latest"
 app = Flask(__name__)
 genai.configure(api_key=gen_api)
 
+class CustomURLExtract(URLExtract):
+    def _get_cache_file_path(self):
+        cache_dir = "/tmp"
+        return os.path.join(cache_dir, "tlds-alpha-by-domain.txt")
+
+extractor = CustomURLExtract(limit=1)
+
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
@@ -41,6 +48,7 @@ model = genai.GenerativeModel(model_name=model_name,
                               safety_settings=safety_settings)
 
 convo = model.start_chat(history=[])
+convo.send_message(instructions.instructions)
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
