@@ -6,9 +6,9 @@ import fitz
 from mimetypes import guess_type
 import psycopg2
 from datetime import datetime,timedelta
-from urlextract import URLExtract
-from  PIL import Image
-from io import BytesIO
+#from urlextract import URLExtract
+#from  PIL import Image
+#from io import BytesIO
 from training import instructions
 import sched
 import time
@@ -22,14 +22,14 @@ model_name="gemini-1.5-flash-latest"
 
 app=Flask(__name__)
 genai.configure(api_key=gen_api)
-
+"""
 class CustomURLExtract(URLExtract):
     def _get_cache_file_path(self):
         cache_dir = "/tmp"
         return os.path.join(cache_dir, "tlds-alpha-by-domain.txt")
 
 extractor = CustomURLExtract(limit=1)
-
+"""
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
@@ -66,13 +66,13 @@ def send(answer,sender,phone_id):
     type="text"
     body="body"
     content=answer
-    urls=extractor.find_urls(answer)
-    if len(urls)>0:
-        mime_type,_=guess_type(urls[0].split("/")[-1])
-        type=mime_type.split("/")[0]
-        body="link"
-        content=urls[0]
-        answer=answer.replace(urls[0],"\n")
+    #urls=extractor.find_urls(answer)
+    #if len(urls)>0:
+    #    mime_type,_=guess_type(urls[0].split("/")[-1])
+    #    type=mime_type.split("/")[0]
+    #    body="link"
+    #    content=urls[0]
+    #    answer=answer.replace(urls[0],"\n")
     data = {
         "messaging_product": "whatsapp",
         "to": sender,
@@ -167,6 +167,7 @@ def message_handler(data,phone_id):
             with open(filename, "wb") as temp_media:
                 temp_media.write(media_download_response.content)
             file = genai.upload_file(path=filename,display_name="tempfile")
+            """
             if data["type"] == "image":
                 response = model.generate_content(["What is in this image?",file])
                 answer=response.text
@@ -187,6 +188,7 @@ def message_handler(data,phone_id):
                                             so this message is created by an llm model based on the audio send by the user, 
                                             reply to the customer assuming you heard that audio.
                                             (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+            """
             remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
         files=genai.list_files()
         for file in files:
