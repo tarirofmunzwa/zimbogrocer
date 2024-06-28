@@ -166,7 +166,7 @@ def message_handler(data,phone_id):
     sender=data["from"]
     if data["type"] == "text":
         prompt = data["text"]["body"]
-        if db:insert_chat(owner_phone,prompt)
+        if db:insert_chat(sender,prompt)
         convo.send_message(prompt)
     else:
         media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
