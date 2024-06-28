@@ -105,6 +105,8 @@ if db:
         Message = Column(String, nullable=False)
         Chat_time = Column(DateTime, default=datetime.utcnow)
 
+    Base.metadata.create_all(engine)
+    
     def insert_chat(sender, message):
         try:
             session = Session()
