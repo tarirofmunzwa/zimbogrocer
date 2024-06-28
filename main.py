@@ -185,7 +185,7 @@ def message_handler(data,phone_id):
                                             so this message is created by an llm model based on the audio send by the user, 
                                             reply to the customer assuming you heard that audio.
                                             (Warn the customer and stop the chat if it is not related to the business): {answer}''')
-            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3","/tmp/prod_image.jpg")
         files=genai.list_files()
         for file in files:
             file.delete()
