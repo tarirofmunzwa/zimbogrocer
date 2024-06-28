@@ -96,9 +96,19 @@ if db:
     report_time = datetime.now().replace(hour=22, minute=00, second=0, microsecond=0)
 
     def insert_chat(sender,message):
-        cursor.execute("INSERT INTO chats (sender,message) VALUES (%s,%s)",(sender,message))
-        connect.commit()
-        cursor.close()
+        try:
+            cursor.execute('''CREATE TABLE IF NOT EXISTS chats(
+                Order SERIAL PRIMARY KEY,
+                Sender VARCHAR(255) NOT NULL,
+                Message TEXT NOT NULL,
+                Chat_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );''')
+            cursor.execute("INSERT INTO chats (sender,message) VALUES (%s,%s)",(sender,message))
+            connect.commit()
+        except:
+            cursor.rollback()
+        finally:
+            cursor.close()
 
     def get_chats(sender):
         cursor.execute("SELECT chat_text FROM chats WHERE sender = %s", (sender,))
@@ -129,7 +139,7 @@ def message_handler(data,phone_id):
     sender=data["from"]
     if data["type"] == "text":
         prompt = data["text"]["body"]
-        if db:insert_chat(sender,prompt)
+        if db:insert_chat(owner_phone,prompt)
         convo.send_message(prompt)
     else:
         media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
@@ -194,6 +204,7 @@ def message_handler(data,phone_id):
         send(reply, sender, phone_id)
     else:send(reply,sender,phone_id)
     if db:
+        insert_chat(owner_phone,reply)
         scheduler.enterabs(report_time.timestamp(), 1, create_report, (phone_id,))
         scheduler.run(blocking=False)
         delete_old_chats()
