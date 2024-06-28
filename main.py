@@ -226,6 +226,6 @@ def webhook():
                     file.delete()
         except :pass
         return jsonify({"status": "ok"}), 200
-    else return render_template("connected.html")
+    #else return render_template("connected.html")
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
