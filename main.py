@@ -7,8 +7,6 @@ from mimetypes import guess_type
 import psycopg2
 from datetime import datetime,timedelta
 from urlextract import URLExtract
-from  PIL import Image
-from io import BytesIO
 from training import instructions
 import sched
 import time
