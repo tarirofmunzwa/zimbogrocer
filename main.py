@@ -6,7 +6,6 @@ import fitz
 from mimetypes import guess_type
 import psycopg2
 from datetime import datetime,timedelta
-from pathlib import Path
 from urlextract import URLExtract
 from  PIL import Image
 from io import BytesIO
@@ -20,10 +19,6 @@ wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
 model_name="gemini-1.5-flash-latest"
-
-folder=Path("product_images")
-product_images=[file.stem for file in folder.iterdir() if file.is_file()]
-product_images=list(map(lambda i:i.replace(" ","_"),product_images))
 
 app=Flask(__name__)
 genai.configure(api_key=gen_api)
