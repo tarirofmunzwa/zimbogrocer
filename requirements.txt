@@ -1,6 +1,6 @@
 Flask
 google-generativeai
+pillow
 pymupdf
 psycopg2-binary
 urlextract
-Pillow
