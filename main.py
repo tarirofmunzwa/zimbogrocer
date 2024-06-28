@@ -48,7 +48,7 @@ def remove(*file_paths):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return "Vercel"
+    return render_template("connected.html")
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
