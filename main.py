@@ -128,13 +128,13 @@ if db:
 else:pass
 
 def message_handler(data,phone_id):
-    sender=data["from"]
+    sender="+"+data["from"]
     if data["type"] == "text":
         prompt = data["text"]["body"]
-        insert_chat(sender,prompt)
         convo.send_message(prompt)
+        send(convo.last.text,sender,phone_id)
     else:
-        media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
+        media_url_endpoint = f'https://graph.facebook.com/v18.0/{data[data["type"]]["id"]}/'
         headers = {'Authorization': f'Bearer {wa_token}'}
         media_response = requests.get(media_url_endpoint, headers=headers)
         media_url = media_response.json()["url"]
@@ -150,53 +150,23 @@ def message_handler(data,phone_id):
                 pix = page.get_pixmap()
                 pix.save(destination)
                 file = genai.upload_file(path=destination,display_name="tempfile")
-                response = model.generate_content(["Read this document carefully and explain it in detail",file])
+                response = model.generate_content(["What is this",file])
                 answer=response._result.candidates[0].content.parts[0].text
-                convo.send_message(f'''Direct image input has limitations,
-                                    so this message is created by an llm model based on the document send by the user, 
-                                    reply to the customer assuming you saw that document.
-                                    (Warn the customer and stop the chat if it is not related to the business): {answer}''')
+                convo.send_message(f"user(me) can't send media files directly to you. So this message is created by an llm model based on the image prompt from user to you, reply to the user based on this: {answer}")
+                send(convo.last.text,sender,phone_id)
                 remove(destination)
         else:send("This format is not Supported by the bot ☹",sender,phone_id)
-        if data["type"] == "image" or data["type"] == "audio":
-            with open(filename, "wb") as temp_media:
-                temp_media.write(media_download_response.content)
-            file = genai.upload_file(path=filename,display_name="tempfile")
-            if data["type"] == "image":
-                response = model.generate_content(["What is in this image?",file])
-                answer=response.text
-                convo.send_message(f'''Customer has sent an image,
-                                    So here is the llm's reply based on the image sent by the customer:{answer}\n\n''')
-                urls=extractor.find_urls(convo.last.text)
-                if len(urls)>0:
-                    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
-                    response=requests.get(urls[0],headers=headers)
-                    img=Image.open(BytesIO(response.content))
-                    response=model.generate_content(["Is the things in both the images are exactly same? Explain in detail",img,file])
-                    answer=response.text
-                    convo.send_message(f'''This is the message from AI after comparing the two images: {answer}''')
-            else:
-                response = model.generate_content(["What is the content of this audio file?",file])
-                answer=response.text
-                convo.send_message(f'''Direct media input has limitations,
-                                            so this message is created by an llm model based on the audio send by the user, 
-                                            reply to the customer assuming you heard that audio.
-                                            (Warn the customer and stop the chat if it is not related to the business): {answer}''')
-            remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+        with open(filename, "wb") as temp_media:
+            temp_media.write(media_download_response.content)
+        file = genai.upload_file(path=filename,display_name="tempfile")
+        response = model.generate_content(["What is this",file])
+        answer=response._result.candidates[0].content.parts[0].text
+        remove("/tmp/temp_image.jpg","/tmp/temp_audio.mp3")
+        convo.send_message(f"I can't send media files directly to you. So this is an voice/image message to you from me(user) transcribed by an llm model, reply to me assuming you saw the media file: {answer}")
+        send(convo.last.text,sender,phone_id)
         files=genai.list_files()
         for file in files:
             file.delete()
-    reply=convo.last.text
-    if "unable_to_solve_query" in reply:
-        send(f"customer {sender} is not satisfied", owner_phone, phone_id)
-        reply=reply.replace("unable_to_solve_query",'\n')
-        send(reply, sender, phone_id)
-    else:send(reply,sender,phone_id)
-    if db:
-        scheduler.enterabs(report_time.timestamp(), 1, create_report, (phone_id,))
-        scheduler.run()
-        delete_old_chats()
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     return render_template("connected.html")
