@@ -3,4 +3,3 @@ google-generativeai
 pymupdf
 psycopg2-binary
 urlextract
-psycopg2
