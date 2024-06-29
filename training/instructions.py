@@ -1,4 +1,4 @@
-import products
+from training import products
 
 company_name="Falcora Store"
 company_address="1234 Innovation Drive, Suite 100, Tech City, CA 90001"
