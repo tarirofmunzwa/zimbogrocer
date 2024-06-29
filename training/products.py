@@ -103,7 +103,7 @@ products=(
 
     "*Product 3:*\n"
     "- Name: Asus Tuff F15\n"
-    ''About this item
+    '''About this item
     Processor: Intel Core i5-11400H Processor 2.7 GHz (12M Cache, up to 4.5 GHz, 6 Cores) efficient multitasking, Improved multimedia tasks etc.
     Storage: 512GB PCIe 3.0 NVMe M.2 SSD with additional 1x M.2 Slot for SSD Storage expansion |Memory: 16GB SO-DIMM DDR4 3200MHz Support Up to 32GB 2x SO-DIMM slots
     Display: 144Hz Refresh Rate, 15.6 inch (39.62 cms) FHD (1920 x 1080) 16:9 250nits,vIPS-level Anti-glare display, Contrast Ratio: 1000:1 with Adaptive-Sync;
