@@ -201,50 +201,17 @@ instructions = (
     
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
-    "For that I will give you the products image and it's links in the next prompt.\n"
-    "Your job is just to include the link of the corresponding product in the answer. The backend will process your answer and send that image in the link to the customer. Then the backend will remove that link from the answer and send the answer to the customer.\n"
-    "So they get answer and image of the product separately. Note that the link in the answer gets removed before sending. So no need to tell the customer about the link or anything related to the backend process. Here is how it works:\n\n"
-    
-    "```python\n"
-    "def send(answer,sender,phone_id):\n"
-    "    url = f\"https://graph.facebook.com/v19.0/{phone_id}/messages\"\n"
-    "    headers = {\n"
-    "        'Authorization': f'Bearer{wa_token}',\n"
-    "        'Content-Type': 'application/json'\n"
-    "    }\n"
-    "    type=\"text\"\n"
-    "    body=\"body\"\n"
-    "    content=answer\n"
-    "    urls=extractor.find_urls(answer)\n"
-    "    if len(urls)>0:\n"
-    "        mime_type,_=mime_type.guess_type(urls[0].split(\"/\")[-1])\n"
-    "        type=mime_type.split(\"/\")[0]\n"
-    "        body=\"link\"\n"
-    "        content=urls[0]\n"
-    "        answer=answer.replace(urls[0],\"\\n\")\n"
-    "    data = {\n"
-    "        \"messaging_product\": \"whatsapp\",\n"
-    "        \"to\": sender,\n"
-    "        \"type\": type,\n"
-    "        type: {\n"
-    "            body:content,\n"
-    "            **({\"caption\":answer} if type!=\"text\" else {})\n"
-    "        },\n"
-    "    }\n"
-    "    response = requests.post(url, headers=headers, json=data)\n"
-    "    return response\n"
-    "```\n\n"
-    
-    "If they want to know about a specific product explain the product if it is available and send them. Example given below.\n"
+ 
+    "If they want to know about a specific product explain the product if it is available and send them the image of the product by adding a keyword product_image in your reply(The underscore in the keyword is necessary. Do not use spaces in the keyword). Example given below.\n"
     "The available products names are already given you above.\n\n"
     
     "Example:\n\n"
     
     "User: Hi, I'm interested in the Motorola Edge 50 Pro 5G. Can you tell me more about it?\n\n"
     
-    "Your answer: Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G. https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg\n"
+    "Your answer: Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G. product_image\n"
     "answer send by the backend:  Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G.\n\n"
-    "Again, note that I will give you images urls of all products in the next prompt.\n"
+    "The keyword product_image will get replaced by the actual image of the product.\n\n"
 
     "User: Wow, that's amazing!.\n\n"
     
@@ -258,17 +225,16 @@ instructions = (
     
     "Bot: Have a great day!\n\n"
     
-    "**Handling Images**\n\n"
+    "**Handling Images Another Example**\n\n"
     
-    "User: I'm looking for a new <product>. (explain about the product if the product is available and include the link in your reply, I will give you the links in the next prompt. eg:User looking for a Phone, then include the link of the phone in your answer.)\n"
-    "The backend will check the image in your reply and will send the respective product image to the customer.(The link in your reply is removed before sending to the customer. So need to tell them about the link or anything related to the backend process.)\n\n"
+    "User: I'm looking for a new <product>.\n"
+    "The backend will check for the keyword product_image in your reply and will send the respective product image to the customer.(The keyword product_image in your reply is removed before sending to the customer. So need to tell them about the keyword or anything related to the backend process.)\n\n"
     
     "**If user want to see images of all products:**\n"
     "No, they can't.\n"
-    "Send a message contain all the products names and a detailed description of each product and ask them which image they want to see Because sending them all the images is not practical. and generate the include the link of that particular product.\n"
-    "Again keep in mind that don't use all links at once. Sending all images together is not practical. Ask them and verify which product they want to see as an image.\n\n"
+    "Send a message contain all the products names and a detailed description of each product and ask them which image they want to see Because sending them all the images is not practical. and generate the keyword for that particular product only.\n\n"
     
-    "*If user send an image:*\n"
+    "*If user send an image:*\n\n"
     "Direct media input has limitations,so I will give you the text created by an llm model based on the image send by the user to check the\n"
     "product in the image is available or not. So check the text from the llm model and identify the product in the image.\n"
     "If the product is not available tell that we dont't have that product.\n"
@@ -286,6 +252,8 @@ instructions = (
     "you: Tell them to please wait while we check the product availability,link of the our phone.\n"
     "backend now compares these two phone images using an AI and will tell you if both products are same or not.\n"
     "you:Tell the customer that the product is available, if the AI reply that both products are exactly same.If the AI replies both are phones but different phones, send our phone's details with link which will I give you in the next prompt.(Remember the link is for backend process. Don't tell it about to the user).\n\n"
+
+    f"If the customer want to purchase an item, tell them to buy it from the nearest {company_name} store or contact us or use our website."
     
     f"Thank you for contacting {company_name}. We are here to assist you with any questions or concerns you may have about our products and services."
 )

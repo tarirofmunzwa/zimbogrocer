@@ -1,15 +1,15 @@
 import google.generativeai as genai
-from flask import Flask,request,jsonify,render_template
+from flask import Flask, request, jsonify, render_template
 import requests
 import os
 import fitz
-from mimetypes import guess_type
-from datetime import datetime,timedelta
-from urlextract import URLExtract
-from training import instructions
 import sched
 import time
 import logging
+from mimetypes import guess_type
+from datetime import datetime,timedelta
+from urlextract import URLExtract
+from training import instructions, products
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 db=False
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
-owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
+owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
 model_name="gemini-1.5-flash-latest"
 
 app = Flask(__name__)
@@ -53,9 +53,6 @@ model = genai.GenerativeModel(model_name=model_name,
 convo = model.start_chat(history=[])
 convo.send_message(instructions.instructions)
 
-with open("products.txt","r") as f:
-    products=f.read()
-    convo.send_message(f"Here are the links for products images:\n\n{products}")
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
@@ -66,13 +63,19 @@ def send(answer,sender,phone_id):
     type="text"
     body="body"
     content=answer
-    urls=extractor.find_urls(answer)
-    if len(urls)>0:
-        mime_type,_=guess_type(urls[0].split("/")[-1])
-        type=mime_type.split("/")[0]
-        body="link"
-        content=urls[0]
-        answer=answer.replace(urls[0],"\n")
+    image_urls=products.image_urls
+    if "product_image" in answer:
+        for product in image_urls.keys():
+            if product in answer:
+                answer=answer.replace("product_image",image_urls[product])
+                urls=extractor.find_urls(answer)
+                if len(urls)>0:
+                    mime_type,_=guess_type(urls[0].split("/")[-1])
+                    type=mime_type.split("/")[0]
+                    body="link"
+                    content=urls[0]
+                    answer=answer.replace(urls[0],"\n")
+                    break
     data = {
         "messaging_product": "whatsapp",
         "to": sender,
@@ -80,8 +83,8 @@ def send(answer,sender,phone_id):
         type: {
             body:content,
             **({"caption":answer} if type!="text" else {})
-        },
-    }
+            },
+        }
     response = requests.post(url, headers=headers, json=data)
     if db:
         insert_chat("Bot",answer)
