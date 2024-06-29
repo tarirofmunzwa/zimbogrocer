@@ -68,7 +68,7 @@ def send(answer,sender,phone_id):
         type=mime_type.split("/")[0]
         body="link"
         content=urls[0]
-        answer=answer.replace(urls[0],"\n")
+        #answer=answer.replace(urls[0],"\n")
     data = {
         "messaging_product": "whatsapp",
         "to": sender,
