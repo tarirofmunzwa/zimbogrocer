@@ -57,8 +57,7 @@ instructions = (
     
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
-    "Your job is just to include the image link (link of each products is given with the product details of each product look at it and find the link of the corresponding product) of the corresponding product in the answer. The backend will process your answer and will send that image in the link to the customer. Then the backend will remove that link from the answer and send the answer to the customer.\n"
-    "So they get answer with the image of the product. Note that the link your answer gets removed before sending to the customer. It is used only for the backend process. So no need to tell the customer about the link or anything related to the backend process. Here is how it works,it will be replaced before sending. An example is included below after the code. Look answer=answer.replace(urls[0],\"\\n\") in the code:"
+    "Your job is just to include the image link with your reply (link of each products is given in it's description, include it also in your reply). In simple words, don't remove the 'Image link' given in the product description from your reply.It will get replaced with actual image while sending to customer, the backend will handle it.\n"
     
     "```python\n"
     "def send(answer,sender,phone_id):\n"
