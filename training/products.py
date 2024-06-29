@@ -12,7 +12,6 @@ products=(
     Available Colours : Purple and Black with vegan leather design.
     Other : Bluetooth 5.4, Wi-Fi 802.11 a/b/g/n/ac/ax, USB Type-C 3.1, NFC, GPS, A-GPS, Glonass, Galileo, Navic
     Price : $419.83
-    Image link : https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg
     1 year manufacturer warranty for device unit & 6 months for box accessories from date of purchase.\n\
     Availability : In Stock\n\n
     '''
@@ -29,7 +28,6 @@ products=(
     Available colours : Black, Grey and Yellow(Yellow have vegan leather finish, other colour variants have plastic body).
     Other : Bluetooth 5.4, Wi-Fi 802.11 a/b/g/n/ac/ax, USB Type-C 3.1, NFC, GPS, A-GPS, Glonass, Galileo, Navic, IR Blaster, No audio Jack.
     Price : $287.88\n
-    Image link : https://rukminim1.flixcart.com/image/1664/1664/xif0q/mobile/u/o/f/-original-imagx2fgdvh6fzzg.jpeg
     '''
     "-Availability: In Stock\n\n"
     
@@ -45,7 +43,6 @@ products=(
     Battery & Charging: 5000 mAh with 80W SUPERVOOC Fast-charging
     Available colours : black, lite green
     Price : $251.89'''
-    "Image link : https://m.media-amazon.com/images/I/71-yDa90UrL._SY741_.jpg\n"
     "-Availability: In Stock\n\n"
     
     "*Product 4:*\n"
@@ -57,7 +54,6 @@ products=(
     6.78″ 144 Hz LTPO AMOLED Display - 1.54mm ultra narrow side bezels and 3000nits local peak brightness, 2160Hz PWM dimming, SGS eye care display.
     Fast and long lasting battery - 5160mAh high performance battery, 50% charge in 11min'''
     "Price: $467.68\n"
-    "Image link : https://m.media-amazon.com/images/I/718jcIFYaAL._SX679_.jpg\n"
     "-Availability: Out of Stock\n\n"
   
    "*Product 5:*\n"
@@ -69,7 +65,6 @@ products=(
     Fast and long lasting battery - 5000mAh high performance battery and 67W Flashchage, 50% charge in 11 min
     Air Gesture：one more way to interact, navigate through certain features of the smartphone without involving any physical contact'''
     "Price: $239.90\n"
-    "Image link : https://m.media-amazon.com/images/I/71oXWnSWTSL._SX679_.jpg\n"
     "-Availability: In Stock\n\n"
   
   "**Category-Laptops**\n"
@@ -84,7 +79,6 @@ products=(
     Long battery life, Game without interruptions with a 3-cell, 52.5Wh battery that lasts longer than toughest of enemies in game. Fast charge up to 50% in just 30 minutes for extended marathons
     Effortless connectivity for gaming sessions, Wi-Fi 6 and Bluetooth 5.3 wireless card, 1 x USB Type-C, 2 x USB Type-A, 1 x RJ-45, and 1 x HDMI 2.1 ports provide seamless, swift connections'''
     "Price: $719.61\n"
-    "Image link : https://m.media-amazon.com/images/I/61gZdQUgKBL._SX679_.jpg\n"
     "-Availability: In Stock\n\n"
 
     "*Product 2:*\n"
@@ -98,7 +92,6 @@ products=(
     OS and Pre-Installed Softare: Pre-Loaded Windows 11 Home with Lifetime Validity || Battery Life: 60Wh (upto 6Hrs) | Rapid Charge Pro (100pct. Battery Life in 80min)
     Audio: 2x 2W HD Stereo Speakers | Nahimic Audio with Surround Sound, Sound Tracker, Night Mode, Sound Sharing & Content Profiles || Camera: HD 720p | E-cam Shutter | Integrated Dual Array Microphone'''
     "Price: $791.59\n"
-    "Image link : https://m.media-amazon.com/images/I/81tmCrtiRgL._SL1500_.jpg\n"
     "-Availability: In Stock\n\n"
 
     "*Product 3:*\n"
@@ -113,7 +106,6 @@ products=(
     Enjoy over 100 high-quality PC games and one month of Game Pass-including EA Play, plus new and upcoming blockbusters on day one like Halo Infinite, Forza Horizon 5, and Age of Empires IV,
     With new games added. Age of Empires IV, Back 4 Blood, Battlefield V, Forza Horizon 5, Halo Infinite*, Knockout City, Microsoft Flight Simulator, Minecraft PC Bundle, Need for Speed Heat, Psychonauts2, The Sims 4, Titanfall 2, 12 Minutes'''
     "Price: $659.63\n"
-    "Image link : https://m.media-amazon.com/images/I/71-Fx3Vfq5L._SX679_.jpg\n"
     "-Availability: In Stock\n\n"
 
   "**Category-Earbuds**\n"
@@ -126,7 +118,6 @@ products=(
     [Gaming Mode]: It allows users to access a plethora of features while playing supported games on a OnePlus handset. They can be accessed at any time while playing games and give players the option to toggle different features and settings
     Battery Average Life: 38.0 Hours; Model: E510a'''
     "Price: $22.78\n"
-    "Image link : https://m.media-amazon.com/images/I/51oMWaW7tKL._SX679_.jpg\n"
     "-Availability: In Stock\n\n"
 
     "*Product 2:*\n"
@@ -138,7 +129,6 @@ products=(
     88 Low Latency
     Support Bluetooth 5.4'''
     "Price: $17.98\n"
-    "Image link : https://m.media-amazon.com/images/I/61RuJVn92GL._SL1500_.jpg\n"
     "-Availability: In Stock\n\n"
 
       "**Category-Laptops**\n"
@@ -153,7 +143,6 @@ products=(
     Instant Connect- Connect to your morning playlists without any hiccup via the Insta Wake N’ Pair technology that powers on the earbuds as soon as you open the case cover
     IP Rating- The tws earbuds body comes protected with IPX4 rating for water and sweat resistance'''
     "Price: $15.58\n"
-    "Image link : https://m.media-amazon.com/images/I/61KNJav3S9L._SL1500_.jpg\n"
     "-Availability: Out of Stock\n\n")
 
     #(Continue listing all products in this format)
