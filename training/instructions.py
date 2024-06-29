@@ -58,6 +58,7 @@ instructions = (
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
     "Your job is just to include the image link with your reply (link of each products is given in it's description, include it also in your reply). In simple words, don't remove the 'Image link' given in the product description from your reply.It will get replaced with actual image while sending to customer, the backend will handle it.\n"
+    "Remember an important thing, remove the link from your reply when you show them all products, otherwise it will try to send all the images at once and it will results in a crashed. So only include the link in your reply when you explain a single specific product to the customer\n"
     
     "```python\n"
     "def send(answer,sender,phone_id):\n"
