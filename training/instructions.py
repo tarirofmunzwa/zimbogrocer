@@ -99,7 +99,7 @@ instructions = (
     "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg\n"
     "answer send by the backend after filtering the link:  Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image.\n\n"
     "The link will get replaced by the actual image."
-    "Remeber don't forget to send the link of the corresponding product if you explain it to the customer, It's a high priority task.You don't need to ask them that \'Would you like to see the image?\ or not' just send the image by including it's link in your answer and then explain. So the cutomer gets the answer as a caption for that image"
+    "Don't forget to send the image link given in the description of the corresponding product, It's a high priority task.You don't need to ask them that \'Would you like to see the image?\ or not' just send the image by including it's link in your answer and then explain. So the cutomer gets the answer as a caption for that image"
     
     "User: Wow, that's amazing!.\n\n"
     
