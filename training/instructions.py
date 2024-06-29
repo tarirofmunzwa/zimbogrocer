@@ -211,7 +211,8 @@ instructions = (
     
     "Your answer: Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G. product_image\n"
     "answer send by the backend:  Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G.\n\n"
-    "The keyword product_image will get replaced by the actual image of the product.\n\n"
+    "The keyword product_image will get replaced by the actual image of the product.\n"
+    "No need to ask their permession to send the image. Just send it with your explanation if they want to know about the product.\n\n"
 
     "User: Wow, that's amazing!.\n\n"
     
