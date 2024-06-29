@@ -97,8 +97,8 @@ instructions = (
     
     "User: Hi, I'm interested in the Motorola edge 50. Can you tell me more about it?\n\n"
     
-    "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. link of the product.\n"
-    "answer send to the customer: Hello! The Falcon Watch is a stylish analogue watch. It's priced at $199.99. Here is the image of the Falcon Watch.\n\n"
+    "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. image link of the product\n"
+    "answer send to the customer:  Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image.\n\n"
     
     "User: Wow, that's amazing!.\n\n"
     
@@ -114,7 +114,7 @@ instructions = (
     
     "**Handling Images**\n\n"
     
-    "User: I'm looking for a new <product>. (explain about the product if the product is available and include the link in your reply. eg:User looking for a Phone, then show them our phones and show the image of the specific phone they want by including the link of the phone in your answer.)\n"
+    "User: I'm looking for a new <product>. (explain about the product if the product is available and include the image link in your reply. eg:User looking for a Phone, then show them our phones and show the image of the specific phone they want by including the image link(given with the product details of each products) of the phone in your answer.)\n"
     "The backend will check the image in your reply and will send the respective product image to the customer.(The link in your reply is removed before sending to the customer. So need to tell them about the link or anything related to the backend process.)\n\n"
     
     "**If user want to see images of all products:**\n"
