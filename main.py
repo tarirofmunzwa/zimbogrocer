@@ -9,7 +9,7 @@ import logging
 from mimetypes import guess_type
 from datetime import datetime,timedelta
 from urlextract import URLExtract
-from training import instructions, products
+from training import instructions, product_images
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -63,7 +63,7 @@ def send(answer,sender,phone_id):
     type="text"
     body="body"
     content=answer
-    image_urls=products.image_urls
+    image_urls=product_images.image_urls
     if "product_image" in answer:
         for product in image_urls.keys():
             if product in answer:
