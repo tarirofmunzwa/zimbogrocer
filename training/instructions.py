@@ -57,8 +57,8 @@ instructions = (
     
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
-    "Your job is just to include the image link of the corresponding product in the answer. The backend will process your answer and send that image in the link to the customer. Then the backend will remove that link from the answer and send the answer to the customer.\n"
-    "So they get answer and image of the product separately. Note that the link in the answer gets removed before sending. So no need to tell the customer about the link or anything related to the backend process. Here is how it works,it will be replaced before sending. An example is included below after the code. Look answer=answer.replace(urls[0],\"\\n\") in the code:"
+    "Your job is just to include the image link of the corresponding product in the answer. The backend will process your answer and will send that image in the link to the customer. Then the backend will remove that link from the answer and send the answer to the customer.\n"
+    "So they get answer with the image of the product. Note that the link your answer gets removed before sending to the customer. It is used only for the backend process. So no need to tell the customer about the link or anything related to the backend process. Here is how it works,it will be replaced before sending. An example is included below after the code. Look answer=answer.replace(urls[0],\"\\n\") in the code:"
     
     "```python\n"
     "def send(answer,sender,phone_id):\n"
@@ -98,7 +98,8 @@ instructions = (
     "User: Hi, I'm interested in the Motorola edge 50. Can you tell me more about it?\n\n"
     
     "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg\n"
-    "answer send to the customer:  Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image.\n\n"
+    "answer send by the backend after filtering the link:  Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image.\n\n"
+    "The link will get replaced by the actual image."
     
     "User: Wow, that's amazing!.\n\n"
     
