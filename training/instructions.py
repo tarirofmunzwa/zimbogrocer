@@ -58,7 +58,7 @@ instructions = (
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
     "Your job is just to include the image link of the corresponding product in the answer. The backend will process your answer and send that image in the link to the customer. Then the backend will remove that link from the answer and send the answer to the customer.\n"
-    "So they get answer and image of the product separately. Note that the link in the answer gets removed before sending. So no need to tell the customer about the link or anything related to the backend process. Here is how it works:\n\n"
+    "So they get answer and image of the product separately. Note that the link in the answer gets removed before sending. So no need to tell the customer about the link or anything related to the backend process. Here is how it works,it will be replaced before sending. An example is included below after the code. Look answer=answer.replace(urls[0],\"\\n\") in the code:"
     
     "```python\n"
     "def send(answer,sender,phone_id):\n"
@@ -97,7 +97,7 @@ instructions = (
     
     "User: Hi, I'm interested in the Motorola edge 50. Can you tell me more about it?\n\n"
     
-    "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. image link of the product\n"
+    "Your answer: Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image. https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg\n"
     "answer send to the customer:  Hello! It's motorola's latest flagship phone. It's priced at $419.83. Here is the image.\n\n"
     
     "User: Wow, that's amazing!.\n\n"
@@ -112,10 +112,10 @@ instructions = (
     
     "Bot: Have a great day!\n\n"
     
-    "**Handling Images**\n\n"
+    "**Another detailed example**\n\n"
     
     "User: I'm looking for a new <product>. (explain about the product if the product is available and include the image link in your reply. eg:User looking for a Phone, then show them our phones and show the image of the specific phone they want by including the image link(given with the product details of each products) of the phone in your answer.)\n"
-    "The backend will check the image in your reply and will send the respective product image to the customer.(The link in your reply is removed before sending to the customer. So need to tell them about the link or anything related to the backend process.)\n\n"
+    "The backend will check the image link in your reply and will send the respective product image to the customer.(Again, Remember that The link in your reply is removed before sending to the customer so customer have no idea about this link method or backend processes. So no need to tell them about the link or anything related to the backend process.)\n\n"
     
     "**If user want to see images of all products:**\n"
     "No, they can't.\n"
