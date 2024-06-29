@@ -53,10 +53,6 @@ model = genai.GenerativeModel(model_name=model_name,
 convo = model.start_chat(history=[])
 convo.send_message(instructions.instructions)
 
-with open("products.txt","r") as f:
-    products=f.read()
-    convo.send_message(f"Here are the links for products images:\n\n{products}")
-
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
     headers = {
@@ -67,7 +63,7 @@ def send(answer,sender,phone_id):
     body="body"
     content=answer
     urls=extractor.find_urls(answer)
-    if len(urls)>0:
+    if len(urls)>0 and (instructions.company_website not in urls):
         mime_type,_=guess_type(urls[0].split("/")[-1])
         type=mime_type.split("/")[0]
         body="link"
