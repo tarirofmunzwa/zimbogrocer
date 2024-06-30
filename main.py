@@ -14,7 +14,9 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-db=True
+logging.basicConfig(level=logging.INFO)
+
+db=False
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
@@ -106,13 +108,19 @@ if db:
         Message = Column(String, nullable=False)
         Chat_time = Column(DateTime, default=datetime.utcnow)
 
+    logging.info("Creating tables if they do not exist...")
+    Base.metadata.create_all(engine)
+
     def insert_chat(sender, message):
+        logging.info("Inserting chat into database")
         try:
             session = Session()
             chat = Chat(Sender=sender, Message=message)
             session.add(chat)
             session.commit()
+            logging.info("Chat inserted successfully")
         except Exception as e:
+            logging.error(f"Error inserting chat: {e}")
             session.rollback()
         finally:
             session.close()
@@ -126,19 +134,20 @@ if db:
         finally:
             session.close()
 
-
     def delete_old_chats():
         try:
             session = Session()
             cutoff_date = datetime.now() - timedelta(days=14)
             session.query(Chat).filter(Chat.Chat_time < cutoff_date).delete()
             session.commit()
+            logging.info("Old chats deleted successfully")
         except:
             session.rollback()
         finally:
             session.close()
 
     def create_report(phone_id):
+        logging.info("Creating report")
         try:
             today = datetime.today().strftime('%d-%m-%Y')
             session = Session()
@@ -146,7 +155,8 @@ if db:
             if query:
                 chats = '\n\n'.join(query)
                 send(chats, owner_phone, phone_id)
-        except:pass
+        except Exception as e:
+            logging.error(f"Error creating report: {e}")
         finally:
             session.close()
             
