@@ -6,7 +6,7 @@ import fitz
 from mimetypes import guess_type
 from datetime import datetime,timedelta
 from urlextract import URLExtract
-from training import instructions
+from training import instructions,image_links
 import sched
 import time
 import logging
@@ -52,6 +52,7 @@ model = genai.GenerativeModel(model_name=model_name,
 
 convo = model.start_chat(history=[])
 convo.send_message(instructions.instructions)
+convo.send_message(f"Here are the image links:{image_links.links}")
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
