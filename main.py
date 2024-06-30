@@ -137,7 +137,7 @@ if db:
             session.query(Chat).filter(Chat.Chat_time < cutoff_date).delete()
             session.commit()
             logging.info("Old chats deleted successfully")
-        except:
+        except Exception as e:
             logging.error(f"Error deleting old chats: {e}")
             session.rollback()
         finally:
@@ -152,7 +152,7 @@ if db:
             if query:
                 chats = '\n\n'.join(query)
                 send(chats, owner_phone, phone_id)
-        except:logging.error(f"Error creating report: {e}")
+        except Exception as e:logging.error(f"Error creating report: {e}")
         finally:
             session.close()
             
