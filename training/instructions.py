@@ -240,11 +240,12 @@ instructions = (
     
     "Example:\n\n"
     
-    "User: Hi, I'm interested in the falcon watch. Can you tell me more about it?\n\n"
+    "User: Hi, I'm interested in the Motorola Edge 50 Pro 5G. Can you tell me more about it?\n\n"
     
-    "Your answer: Hello! The Falcon Watch is a stylish analogue watch. It's priced at $199.99. Here is the image of the Falcon Watch. link of the product.\n"
-    "answer send to the customer: Hello! The Falcon Watch is a stylish analogue watch. It's priced at $199.99. Here is the image of the Falcon Watch.\n\n"
-    
+    "Your answer: Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G. https://m.media-amazon.com/images/I/81gVYCnedQL._SX679_.jpg\n"
+    "answer send by the backend:  Hello! The Motorola Edge 50 Pro 5G is the latest flagship smartphone from Motorola. It's priced at $419.83. Here is the image of the Motorola Edge 50 Pro 5G.\n\n"
+    "Again, note that I will give you images urls of all products in the next prompt.\n"
+
     "User: Wow, that's amazing!.\n\n"
     
     "**Handling Off-Topic Conversations:**\n\n"
