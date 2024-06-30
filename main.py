@@ -6,7 +6,7 @@ import fitz
 from mimetypes import guess_type
 from datetime import datetime,timedelta
 from urlextract import URLExtract
-from training import instructions,image_links
+from training import instructions
 import sched
 import time
 import logging
@@ -14,9 +14,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-logging.basicConfig(level=logging.INFO)
-
-db=False
+db=True
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycod
@@ -52,7 +50,10 @@ model = genai.GenerativeModel(model_name=model_name,
 
 convo = model.start_chat(history=[])
 convo.send_message(instructions.instructions)
-convo.send_message(f"Here are the image links:{image_links.links}")
+
+with open("products.txt","r") as f:
+    products=f.read()
+    convo.send_message(f"Here are the links for products images:\n\n{products}")
 
 def send(answer,sender,phone_id):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
@@ -64,7 +65,7 @@ def send(answer,sender,phone_id):
     body="body"
     content=answer
     urls=extractor.find_urls(answer)
-    if len(urls)>0 and (instructions.company_website not in urls):
+    if len(urls)>0:
         mime_type,_=guess_type(urls[0].split("/")[-1])
         type=mime_type.split("/")[0]
         body="link"
@@ -80,7 +81,8 @@ def send(answer,sender,phone_id):
         },
     }
     response = requests.post(url, headers=headers, json=data)
-    if db:insert_chat("Bot",answer)
+    if db:
+        insert_chat("Bot",answer)
     return response
 
 def remove(*file_paths):
@@ -104,19 +106,13 @@ if db:
         Message = Column(String, nullable=False)
         Chat_time = Column(DateTime, default=datetime.utcnow)
 
-    logging.info("Creating tables if they do not exist...")
-    Base.metadata.create_all(engine)
-    
     def insert_chat(sender, message):
-        logging.info("Inserting chat into database")
         try:
             session = Session()
             chat = Chat(Sender=sender, Message=message)
             session.add(chat)
             session.commit()
-            logging.info("Chat inserted successfully")
         except Exception as e:
-            logging.error(f"Error inserting chat: {e}")
             session.rollback()
         finally:
             session.close()
@@ -137,15 +133,12 @@ if db:
             cutoff_date = datetime.now() - timedelta(days=14)
             session.query(Chat).filter(Chat.Chat_time < cutoff_date).delete()
             session.commit()
-            logging.info("Old chats deleted successfully")
-        except Exception as e:
-            logging.error(f"Error deleting old chats: {e}")
+        except:
             session.rollback()
         finally:
             session.close()
 
     def create_report(phone_id):
-        logging.info("Creating report")
         try:
             today = datetime.today().strftime('%d-%m-%Y')
             session = Session()
@@ -153,7 +146,7 @@ if db:
             if query:
                 chats = '\n\n'.join(query)
                 send(chats, owner_phone, phone_id)
-        except Exception as e:logging.error(f"Error creating report: {e}")
+        except:pass
         finally:
             session.close()
             
@@ -163,7 +156,7 @@ def message_handler(data,phone_id):
     sender=data["from"]
     if data["type"] == "text":
         prompt = data["text"]["body"]
-        if db:insert_chat(sender,prompt)
+        if db:insert_chat(owner_phone,prompt)
         convo.send_message(prompt)
     else:
         media_url_endpoint = f'https://graph.facebook.com/v19.0/{data[data["type"]]["id"]}/'
