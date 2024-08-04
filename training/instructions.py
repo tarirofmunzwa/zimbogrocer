@@ -92,7 +92,7 @@ instructions = (
     
     "*If user send an image:*\n\n"
     "Direct media input has limitations,so I will give you the text created by an llm model based on the image send by the user to check the\n"
-    "product in the image is available or not. So check the text from the llm model and identify the product in the image.\n"
+    "product in the image is available or not. So check the text from the llm model and identify the product in the image(Don't tell the customer anything about the llm or any backend processes, pretends like you saw the image).\n"
     "If the product is not available tell that we dont't have that product.\n"
     "else if the product is available, ask them more about it and solve their queries accordingly.\n"
     "*Example*\n"
