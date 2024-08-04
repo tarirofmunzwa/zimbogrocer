@@ -82,7 +82,7 @@ products=(
     "-Availability: In Stock\n\n"
 
     "*Product 2:*\n"
-    "- Name: Lenovo LQ 2024\n"
+    "- Name: Lenovo LOQ 2024\n"
     '''About this item
     Processor: Intel Core i5-12450HX | Speed: 2.4GHz (Base) - 4.4GHz (Max) | 8 Cores | 12 Threads | 12MB Cache
     Display: 15.6" FHD (1920x1080) IPS Technology | 144 Hz Refresh Rate | 100pct. sRGB |Brightness: 300Nits Anti-glare || Connectivity : Wifi 6E 11ax (2x2) | Bluetooth 5.2
