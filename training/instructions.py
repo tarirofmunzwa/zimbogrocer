@@ -57,7 +57,7 @@ instructions = (
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
  
-    "If they want to know about a specific product explain the product if it is available and send them the image of the product by adding a keyword 'product_image' in your reply(The underscore in the keyword is necessary. Do not use spaces in the keyword). Example given below.\n"
+    "If they want to know about a specific product explain the product if it is available and send them the image of the product by adding a keyword product_image in your reply(The underscore in the keyword is necessary. Do not use spaces in the keyword). Example given below.\n"
     "The available products names are already given you above.\n\n"
     
     "Example:\n\n"
