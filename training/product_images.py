@@ -5,7 +5,7 @@ image_urls = {
 'IQOO Neo 9 Pro 5G': 'https://m.media-amazon.com/images/I/718jcIFYaAL._SX679_.jpg',
 'Realme Narzo 70 Pro 5G': 'https://m.media-amazon.com/images/I/71oXWnSWTSL._SX679_.jpg',
 'HP Victus Gaming Laptop': 'https://m.media-amazon.com/images/I/61gZdQUgKBL._SX679_.jpg',
-'Lenovo LQ 2024': 'https://m.media-amazon.com/images/I/81tmCrtiRgL._SL1500_.jpg',
+'Lenovo LOQ 2024': 'https://m.media-amazon.com/images/I/81tmCrtiRgL._SL1500_.jpg',
 'Asus Tuff F15': 'https://m.media-amazon.com/images/I/71-Fx3Vfq5L._SX679_.jpg',
 'One Plus Nord Buds 2r': 'https://m.media-amazon.com/images/I/51oMWaW7tKL._SX679_.jpg',
 'Realme Buds T110': 'https://m.media-amazon.com/images/I/61RuJVn92GL._SL1500_.jpg',
