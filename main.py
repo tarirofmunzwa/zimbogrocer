@@ -20,7 +20,7 @@ db=False
 wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
-model_name="gemini-2.0-flash-latest"
+model_name="gemini-2.0-flash"
 
 app = Flask(__name__)
 genai.configure(api_key=gen_api)
