@@ -58,7 +58,7 @@ products=(
     "Price: R32.90\n"
     "-Availability: In Stock\n\n"
 
-      "**Category-Baby Section**\n"
+    "**Category-Baby Section**\n"
     "*Product 1:*\n"
     "- Name: Nestum Baby Cereal\n"
     '''About this item
@@ -72,6 +72,121 @@ products=(
     '''About this item
     Pampers Wipes 64 pack\n'''
     "Price: R31.90\n"
-    "-Availability: In Stock\n\n")
+    "-Availability: In Stock\n\n"
+
+    "**Category- Pantry**\n"
+    "*Product 1:*\n"
+    "- Name: Instant porridge\n"
+    '''About this item
+    Ace instant porridge 1 kg assorted
+    Price: R27.99\n'''
+    "-Availability: In Stock\n\n"
+      
+    "*Product 2:*\n"
+    "- Name: Tomato sauce\n"
+    '''About this item
+    All Gold tomato sauce 700 g
+    Price: R44.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 3:*\n"
+    "- Name: Aromat\n"
+    '''About this item
+    Aromat Original 50 g
+    Price: R24.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 4:*\n"
+    "- Name: Brown bread\n"
+    '''About this item
+    Bakers Inn/Proton brown
+    Price: R23.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 5:*\n"
+    "- Name: White loaf\n"
+    '''About this item
+    Bakers Inn/Proton white loaf
+    Price: R23.99\n'''
+    "- Availability: In Stock\n\n"
+        
+     "*Product 6:*\n"
+    "- Name: Macaroni\n"
+    '''About this item
+    Bella Macaroni 3 kg
+    Price: R82.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 7:*\n"
+    "- Name: Gravy\n"
+    '''About this item
+    Bisto gravy 125 g
+    Price: R19.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 8:*\n"
+    "- Name: Margarine\n"
+    '''About this item
+    Blue Band margarine 500 g
+    Price: R44.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 9:*\n"
+    "- Name: Self-raising flour\n"
+    '''About this item
+    Blue Ribbon Self Raising 2 kg
+    Price: R37.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 10:*\n"
+    "- Name: Cornflakes\n"
+    '''About this item
+    Bokomo cornflakes 1 kg
+    Price: R54.90\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 11:*\n"
+    "- Name: Corned beef\n"
+    '''About this item
+    Bullbrand Corned Beef 300 g
+    Price: R39.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 12:*\n"
+    "- Name: Baked beans\n"
+    '''About this item
+    Cashel Valley baked beans 400 g
+    Price: R18.99\n'''
+    "- Availability: In Stock\n\n"
+        
+    "*Product 13:*\n"
+    "- Name: Cooking oil\n"
+    '''About this item
+    Cookmore/Puredrop cooking oil 2 L
+    Price: R67.99\n'''
+    "- Availability: In Stock\n\n"
+    
+    "*Product 14:*\n"
+    "- Name: Mayonnaise\n"
+    '''About this item
+    Cross and Blackwell Mayonnaise 700 g
+    Price: R49.99\n'''
+    "- Availability: In Stock\n\n"
+    
+    "*Product 15:*\n"
+    "- Name: Sugar beans\n"
+    '''About this item
+    Dried sugar beans 500 g
+    Price: R22.99\n'''
+    "Availability: In Stock\n\n"
+    
+    "*Product 16:*\n"
+    "- Name: Rice\n"
+    '''About this item
+    Ekono/Ideal Rice 5 kg
+    Price: R119.29\n'''
+    "- Availability: In Stock\n\n"
+
+)
 
     #Continue listing all products in this format
