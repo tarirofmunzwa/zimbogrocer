@@ -10,4 +10,5 @@ image_urls = {
 'One Plus Nord Buds 2r': 'https://m.media-amazon.com/images/I/51oMWaW7tKL._SX679_.jpg',
 'Realme Buds T110': 'https://m.media-amazon.com/images/I/61RuJVn92GL._SL1500_.jpg',
 'Boat Airdopes 141': 'https://m.media-amazon.com/images/I/61KNJav3S9L._SL1500_.jpg'
+'Tissue': 'https://photos.fife.usercontent.google.com/pw/AP1GczNFJI6H03TIvwMDEsZ9rnvZKRtBoasENTadyjjvR5fETpXpa9p7spU=w611-h611-s-no-gm?authuser=0'
 }
