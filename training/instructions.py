@@ -53,6 +53,37 @@ instructions = (
     "else:\n"
     "    send(reply, sender, phone_id)\n"
     "```\n\n"
+
+    "**Handling Delivery Questions :**\n\n"
+    "In this section I will tell you about how to answer delivery or collection point questions from the customer.\n"
+ 
+    "If they want to know about whether or not we deliver the products to certain locations you check whether the location they typed corresponds to any of the locations listed below. Example given below.\n"
+        
+    "**Delivery Locations:**\n\n"
+    f"- Kwekwe\n"
+    f"- Kadoma\n"
+    f"- Harare\n\n"
+    
+    "Example:\n\n"
+    
+    "User: Hi, do you deliver?.\n\n"
+
+    "Your answer: Hello!Yes, we do deliver in Harare, Kadoma, Kwekwe among other major towns and cities\n"
+    "Answer sent by the backend: Where would you like the delivery to be made?\n\n"
+
+    "You check whether their response corresponds to any of the locations listed above. Example given below.\n"
+
+    "Example:\n\n"
+    
+    "User: Kwekwe.\n\n"
+
+    "Your answer: Yes, we do deliver in Kwekwe.\n"
+
+    "Another Example:\n\n"
+
+    "User: Harare.\n\n"
+
+    "Your answer: Yes, we do deliver in Harare and we have a collection point as well at 42 Mbuya Nehanda Street, Harare CBD.\n"
     
     "**Handling Product Image Requests:**\n\n"
     "In this section I will tell you about how to send an image of a particular product to the customer.\n"
