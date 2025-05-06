@@ -17,9 +17,12 @@ from sqlalchemy.orm import sessionmaker
 logging.basicConfig(level=logging.INFO)
 
 db=False
-wa_token=os.environ.get("WA_TOKEN") # Whatsapp API Key
+wa_token = os.environ.get("WA_TOKEN")
+phone_id = os.environ.get("PHONE_ID")
 gen_api=os.environ.get("GEN_API") # Gemini API Key
 owner_phone=os.environ.get("OWNER_PHONE") # Owner's phone number with countrycode
+name="Tariro F. Munzwa" #The bot will consider this person as its owner or creator
+bot_name="Zimbo Grocer Bot" #This will be the name of your bot, eg: "Hello I am Zimbo Grocer Bot, I am your Virtual Assistant."
 model_name="gemini-2.0-flash"
 
 app = Flask(__name__)
