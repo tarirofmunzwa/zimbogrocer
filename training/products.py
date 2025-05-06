@@ -13,6 +13,20 @@ products=(
     Ivine's Mixed Portions 2kg
     Price : R179.99\n'''
     "-Availability: In Stock\n\n"
+
+    "*Product 3:*\n"
+    "- Name: Cheddar Cheese\n"
+    '''About this item
+    Parmalat/Clover/PnP 12 slices cheddar cheese
+    Price: R89.99\n'''
+    "-Availability: In Stock\n\n"
+
+    "*Product 4:*\n"
+    "- Name: Beef Polony\n"
+    '''About this item
+    Colcom beef polony 3 kg
+    Price: R299.00\n'''
+    "-Availability: In Stock\n\n"
     
   "**Category-Beverages**\n"
     "*Product 1:*\n"
