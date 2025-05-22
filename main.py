@@ -4,7 +4,7 @@ import requests
 import random
 import string
 import pickle
-
+import json
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
@@ -29,10 +29,20 @@ owner_phone_3 = os.environ.get("OWNER_PHONE_3")
 owner_phone_4 = os.environ.get("OWNER_PHONE_4")
 model_name = "gemini-2.0-flash"
 DATABASE_URL = os.environ.get("DATABASE_URL", "mysql+pymysql://root@129.232.179.60:3306/chatbot_db")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 app = Flask(__name__)
 
 USER_STATE_FILE = "user_states.pkl"
+
+Base = declarative_base()
+
+class UserStateDB(Base):
+    __tablename__ = "user_states"
+    phone = Column(String(20), primary_key=True, index=True)
+    state_data = Column(Text)
+
 
 def load_user_states():
     if os.path.exists(USER_STATE_FILE):
@@ -45,6 +55,29 @@ def save_user_states(states):
         pickle.dump(states, f)
 
 user_states = load_user_states()
+
+
+# Load pickle
+with open('user_states.pkl', 'rb') as f:
+    user_states = pickle.load(f)
+    
+
+db = SessionLocal()
+try:
+    for phone, state in user_states.items():
+        # Remove/convert any non-serializable objects if needed
+        # Convert the state dict to JSON string
+        json_data = json.dumps(state)
+        # Create or update the record
+        record = db.query(UserStateDB).filter_by(phone=phone).first()
+        if record:
+            record.state_data = json_data
+        else:
+            record = UserStateDB(phone=phone, state_data=json_data)
+            db.add(record)
+    db.commit()
+finally:
+    db.close()
 
 class CustomURLExtract(URLExtract):
     def _get_cache_file_path(self):
