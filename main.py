@@ -526,7 +526,7 @@ def message_handler(data, phone_id):
         send(confirm_message, sender, phone_id)
         user_data["step"] = "confirm_details"
     
-    elif step == "confirm_details":
+elif step == "confirm_details":
         if prompt.lower() in ["yes", "y"]:
             order_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             payment_info = (
@@ -537,15 +537,11 @@ def message_handler(data, phone_id):
                 f"4. Western Union ( payment details provided upon request)\n\n"
                 f"Order ID: {order_id}"
             )
-            send(
-                f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\n"
-                f"Receiver: {user.checkout_data['receiver_name']}\n"
-                f"Address: {user.checkout_data['address']}\n"
-                f"Phone: {user.checkout_data['phone']}\n\n"
-                f"{payment_info}\nWould you like to place another order? (yes/no)", sender, phone_id
-            )
+
+            send(f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\nReceiver: {user.checkout_data['receiver_name']}\nAddress: {user.checkout_data['address']}\nPhone: {user.checkout_data['phone']}\n\n{payment_info}", sender, phone_id)
             user.clear_cart()
             user_data["step"] = "ask_place_another_order"
+            send("Would you like to place another order? (yes/no)", sender, phone_id)
         else:
             send("Okay, let's correct the details. What's the receiver’s full name?", sender, phone_id)
             user_data["step"] = "get_receiver_name"
