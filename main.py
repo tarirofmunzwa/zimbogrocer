@@ -75,7 +75,7 @@ class OrderSystem:
         Product("Matches Carton (10s)", 8.99, "Matches"),
         Product("Surf 5kg", 159.99, "Washing powder"),
         Product("Britelite Candles 6s", 32.99, "Candles"),
-        Product("Sta-Soft Assorted Refill Sachet 2L", 39.99, "Fabric softener refill"),
+        Product("Sta Soft Assorted Refill Sachet 2L", 39.99, "Fabric softener refill"),
         Product("Poppin Fresh Dishwashing Liquid 750ml", 22.99, "Dishwashing liquid"),
         Product("Poppin Fresh Toilet Cleaner 500ml", 34.99, "Toilet cleaner"),
         Product("Poppin Fresh Multi-Purpose Cleaner", 25.99, "Multi-purpose cleaner")
