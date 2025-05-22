@@ -355,6 +355,7 @@ def index():
     return render_template("connected.html")
 
 @app.route("/webhook", methods=["GET", "POST"])
+@app.route("/webhook", methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
         mode = request.args.get("hub.mode")
@@ -365,10 +366,15 @@ def webhook():
         return "Failed", 403
 
     elif request.method == "POST":
-        data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
-        phone_id = request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
-        message_handler(data, phone_id)
-        return jsonify({"status": "ok"}), 200
+        value = request.get_json()["entry"][0]["changes"][0]["value"]
+        if "messages" in value and value["messages"]:
+            data = value["messages"][0]
+            phone_id = value["metadata"]["phone_number_id"]
+            message_handler(data, phone_id)
+            return jsonify({"status": "ok"}), 200
+        else:
+            return jsonify({"status": "no user message"}), 200
+
 
 def message_handler(data, phone_id):
     sender = data["from"]
