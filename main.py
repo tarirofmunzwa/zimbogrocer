@@ -4,6 +4,7 @@ import requests
 import redis
 import random
 import string
+from flask import Flask, request, jsonify, render_template
 
 # --- ENVIRONMENT VARIABLES ---
 WA_TOKEN = os.environ["WA_TOKEN"]
