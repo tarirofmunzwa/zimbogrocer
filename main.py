@@ -226,9 +226,8 @@ class OrderSystem:
         Product("Newsprint 1 Quire (96 Page) Counter Book", 17.99, "Counter book"),
         Product("HB Pencils x 12 Set", 24.99, "Pencils set"),
         Product("Sharp Scientific Calculator", 319.99, "Scientific calculator"),
-        Product("32 Page Newsprint Plain Exercise Book (10 Pack)", 36.99, "Plain exercise books")
-    ]
-    "Pantry": [
+        Product("32 Page Newsprint Plain Exercise Book (10 Pack)", 36.99, "Plain exercise books"),
+        "Pantry": [
         Product("Ace Instant Porridge 1kg Assorted", 27.99, "Instant porridge mix"),
         Product("All Gold Tomato Sauce 700g", 44.99, "Tomato sauce"),
         Product("Aromat Original 50g", 24.99, "Seasoning"),
