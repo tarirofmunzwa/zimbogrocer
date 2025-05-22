@@ -45,6 +45,7 @@ class UserStateDB(Base):
 
 
 def load_user_states():
+    user_states = None
     if os.path.exists(USER_STATE_FILE):
         with open(USER_STATE_FILE, "rb") as f:
             return pickle.load(f)
