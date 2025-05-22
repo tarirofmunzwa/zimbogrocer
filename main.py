@@ -589,12 +589,16 @@ def message_handler(data, phone_id):
                 f"4. Western Union (payment details provided upon request)\n\n"
                 f"Order ID: {order_id}"
             )
+            # SHOW order details immediately and ask if they want to order again
             send(
-                f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\n"
+                f"Order placed! 🛒\nOrder ID: {order_id}\n\n"
+                f"{show_cart(user)}\n\n"
                 f"Receiver: {user.checkout_data['receiver_name']}\n"
                 f"Address: {user.checkout_data['address']}\n"
                 f"Phone: {user.checkout_data['phone']}\n\n"
-                f"{payment_info}\nWould you like to place another order? (yes/no)", sender, phone_id
+                f"{payment_info}\n\n"
+                "Would you like to place another order? (yes/no)",
+                sender, phone_id
             )
             user.clear_cart()
             user_data["step"] = "ask_place_another_order"
