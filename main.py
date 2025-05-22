@@ -21,9 +21,9 @@ owner_phone_4 = os.environ.get("OWNER_PHONE_4")
 
 # Redis Connection
 redis_client = StrictRedis(
-    host=os.environ.get("REDIS_HOST"),
+    host=os.environ.get("UPSTASH_REDIS_HOST"),
     port=6379,
-    password=os.environ.get("REDIS_PASSWORD"),
+    password=os.environ.get("UPSTASH_REDIS_PASSWORD"),
     ssl=True,
     decode_responses=True
 )
@@ -209,7 +209,7 @@ class OrderSystem:
         Product("Irvines Mixed Chicken Cuts 2kg", 179.99, "Mixed chicken cuts"),
         Product("Dairibord Yoghurt 150ml", 15.99, "Yoghurt")
     ],
-    "Stationery": [
+        "Stationery": [
         Product("Plastic Cover 3 Meter Roll", 7.99, "Plastic cover"),
         Product("Ruler 30cm", 6.99, "Ruler"),
         Product("A4 Bond Paper White", 126.99, "Bond paper"),
