@@ -404,12 +404,15 @@ def webhook():
 
     elif request.method == "POST":
         value = request.get_json()["entry"][0]["changes"][0]["value"]
-        if "messages" not in value or not value["messages"]:
-            return jsonify({"status": "no message"}), 200
-        data = value["messages"][0]
-        phone_id = value["metadata"]["phone_number_id"]
-        message_handler(data, phone_id)
-        return jsonify({"status": "ok"}), 200
+        # Only respond if there is a real user message
+        if "messages" in value and value["messages"]:
+            data = value["messages"][0]
+            phone_id = value["metadata"]["phone_number_id"]
+            message_handler(data, phone_id)
+            return jsonify({"status": "ok"}), 200
+        else:
+            # No user message to respond to (could be delivery status, etc)
+            return jsonify({"status": "no user message"}), 200
 
 def message_handler(data, phone_id):
     sender = data["from"]
