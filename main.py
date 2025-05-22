@@ -51,8 +51,11 @@ def load_user_states():
     return {}
 
 def save_user_states(states):
-    with open(USER_STATE_FILE, "wb") as f:
-        pickle.dump(states, f)
+if os.path.exists('user_states.pkl'):
+    with open('user_states.pkl', 'rb') as f:
+        user_states = pickle.load(f)
+else:
+    user_states = {} 
 
 user_states = load_user_states()
 
