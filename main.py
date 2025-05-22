@@ -172,7 +172,7 @@ class OrderSystem:
         beverages.add_product(Product("Joko Rooibos Tea Bags 80s", 84.99, "Rooibos tea"))
         self.add_category(beverages)
                 
-        # Household
+ # Household
         household = Category("Household")
         household.add_product(Product("Sta Soft Lavender 2L", 59.99, "Fabric softener"))
         household.add_product(Product("Sunlight Dishwashing Liquid 750ml", 35.99, "Dishwashing liquid"))
@@ -352,7 +352,7 @@ class OrderSystem:
         baby_section.add_product(Product("Nan 2: Infant Formula Optipro 400g", 79.99, "Infant formula"))
         baby_section.add_product(Product("Nan 1: Infant Formula Optipro 400g", 79.99, "Infant formula"))
         self.add_category(baby_section)
-
+   
 
     def add_category(self, category):
         self.categories[category.name] = category
@@ -403,8 +403,11 @@ def webhook():
         return "Failed", 403
 
     elif request.method == "POST":
-        data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
-        phone_id = request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
+        value = request.get_json()["entry"][0]["changes"][0]["value"]
+        if "messages" not in value or not value["messages"]:
+            return jsonify({"status": "no message"}), 200
+        data = value["messages"][0]
+        phone_id = value["metadata"]["phone_number_id"]
         message_handler(data, phone_id)
         return jsonify({"status": "ok"}), 200
 
@@ -448,11 +451,11 @@ def message_handler(data, phone_id):
         "Dema": 300
     }
 
-    # ---- FIX: Only ONE send per prompt, combine messages where needed ----
-
+    # ---- Single send per "turn" ----
     if step == "ask_name":
         send("Hello! Welcome to Zimbogrocer. What's your name?", sender, phone_id)
         user_data["step"] = "save_name"
+        # Wait for user input
 
     elif step == "save_name":
         user = User(prompt.title(), sender)
@@ -473,7 +476,6 @@ def message_handler(data, phone_id):
                 send("Invalid category. Try again:\n" + list_categories(), sender, phone_id)
         else:
             send("Please enter a valid category letter (e.g., A, B, C).", sender, phone_id)
-
 
     elif step == "choose_product":
         try:
@@ -504,7 +506,7 @@ def message_handler(data, phone_id):
     elif step == "post_add_menu":
         if prompt.lower() == "view cart":
             cart_message = show_cart(user)
-            # FIX: Combine cart and next prompt into one message
+            # Next step: ask for delivery area
             send(cart_message + "\n\nPlease select your delivery area:\n" + "\n".join([f"{k} - R{v:.2f}" for k, v in delivery_areas.items()]), sender, phone_id)
             user_data["step"] = "get_area"
         elif prompt.lower() == "clear cart":
@@ -578,10 +580,10 @@ def message_handler(data, phone_id):
             order_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
             payment_info = (
                 f"Please make payment using one of the following options:\n\n"
-                f"1. EFT\nBank: FNB\nName: Zimbogrocer (Pty) Ltd\nAccount: 62847698167\nBranch Code: 250655\nSwift Code: FIRNZAJJ\nReference: {order_id}\nPlease remember to send the Proof of Payment as soon as you make payment.\n Have a nice day.\n\n"
+                f"1. EFT\nBank: FNB\nName: Zimbogrocer (Pty) Ltd\nAccount: 62847698167\nBranch Code: 250655\nSwift Code: FIRNZAJJ\nReference: {order_id}\nPlease remember to send the Proof of Payment as a reply to this chat.\n"
                 f"2. Pay at supermarkets: SHOPRITE, CHECKERS, USAVE, PICK N PAY, GAME, MAKRO or SPAR using Mukuru wicode\n\n"
                 f"3. World Remit Transfer (payment details provided upon request)\n\n"
-                f"4. Western Union ( payment details provided upon request)\n\n"
+                f"4. Western Union (payment details provided upon request)\n\n"
                 f"Order ID: {order_id}"
             )
             send(
