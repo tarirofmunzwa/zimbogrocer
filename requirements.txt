@@ -4,3 +4,6 @@ pymupdf
 sqlalchemy
 urlextract
 psycopg2-binary
+pymysql
+requests
+python-dotenv
