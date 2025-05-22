@@ -22,7 +22,6 @@ owner_phone_2 = os.environ.get("OWNER_PHONE_2")
 owner_phone_3 = os.environ.get("OWNER_PHONE_3")
 owner_phone_4 = os.environ.get("OWNER_PHONE_4")
 
-
 # Flask setup
 app = Flask(__name__)
 
@@ -324,7 +323,6 @@ class OrderSystem:
         baby_section.add_product(Product("Nan 1: Infant Formula Optipro 400g", 79.99, "Infant formula"))
         self.add_category(baby_section)
 
-
 # DB State helpers
 def get_user_state(sender):
     db = SessionLocal()
@@ -412,7 +410,7 @@ def message_handler(data, phone_id):
         total = sum(p.price*q for p, q in cart)
         return "\n".join(lines) + f"\n\nTotal: R{total:.2f}"
 
-      delivery_areas = {
+    delivery_areas = {
         "Harare": 240,
         "Chitungwiza": 300,
         "Mabvuku": 300,
@@ -428,7 +426,6 @@ def message_handler(data, phone_id):
         "Dema": 300
     }
 
-
     if step == "ask_name":
         send("Hello! Welcome to Zimbogrocer. What's your name?", sender, phone_id)
         user_data["step"] = "save_name"
@@ -438,14 +435,17 @@ def message_handler(data, phone_id):
         send(f"Thanks {user.payer_name}! Please select a category:\n{list_categories()}", sender, phone_id)
         user_data["step"] = "choose_category"
     elif step == "choose_category":
-        idx = ord(prompt.upper()) - 65
-        categories = order_system.list_categories()
-        if 0 <= idx < len(categories):
-            cat = categories[idx]
-            user_data["selected_category"] = cat
-            send(f"Products in {cat}:\n{list_products(cat)}\nSelect a product by number.", sender, phone_id)
-            user_data["step"] = "choose_product"
-        else:
+        try:
+            idx = ord(prompt.upper()) - 65
+            categories = order_system.list_categories()
+            if 0 <= idx < len(categories):
+                cat = categories[idx]
+                user_data["selected_category"] = cat
+                send(f"Products in {cat}:\n{list_products(cat)}\nSelect a product by number.", sender, phone_id)
+                user_data["step"] = "choose_product"
+            else:
+                send("Invalid category. Try again:\n" + list_categories(), sender, phone_id)
+        except Exception:
             send("Invalid category. Try again:\n" + list_categories(), sender, phone_id)
     elif step == "choose_product":
         try:
