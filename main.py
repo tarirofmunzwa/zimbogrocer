@@ -88,7 +88,7 @@ class OrderSystem:
         Product("Nivea Women's Roll On Assorted 50ml", 33.99, "Deodorant"),
         Product("Clere Lanolin Lotion 400ml", 35.99, "Body lotion"),
         Product("Vaseline Men Petroleum Jelly 250ml", 9.99, "Petroleum jelly"),
-        Product("Vaseline Petroleum Jelly Original 250ml", 39.99, "Petroleum jelly")
+        Product("Vaseline Petroleum Jelly Original 250ml", 39.99, "Petroleum jelly"),
         Product("Sunlight Bath Soap Lively Lemon 175g", 10.90, "Bath soap"),
         Product("Shield Fresh Shower Deo", 24.99, "Deodorant"),
         Product("Hoity Toity Ladies Spray", 22.90, "Ladies spray"),
