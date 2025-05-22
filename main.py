@@ -3,40 +3,76 @@ import logging
 import requests
 import random
 import string
-import json
+import pickle
+
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
-from sqlalchemy import create_engine, Column, String, Text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import google.generativeai as genai
+import fitz
+import sched
+import time
+from mimetypes import guess_type
+from urlextract import URLExtract
 
-# Logging
 logging.basicConfig(level=logging.INFO)
 
-# ENV Variables
-wa_token = os.environ.get("WA_TOKEN")
-DATABASE_URL = os.environ.get("DATABASE_URL", "mysql+pymysql://root@129.232.179.60:3306/chatbot_db")
+db = True
+wa_token = os.environ.get("WA_TOKEN") # WhatsApp API Key
 gen_api = os.environ.get("GEN_API")  # Gemini API Key
 owner_phone = os.environ.get("OWNER_PHONE") # Owner's phone number with country code
 owner_phone_1 = os.environ.get("OWNER_PHONE_1")
 owner_phone_2 = os.environ.get("OWNER_PHONE_2")
 owner_phone_3 = os.environ.get("OWNER_PHONE_3")
 owner_phone_4 = os.environ.get("OWNER_PHONE_4")
+model_name = "gemini-2.0-flash"
+DATABASE_URL = os.environ.get("DATABASE_URL", "mysql+pymysql://root@129.232.179.60:3306/chatbot_db")
 
-# Flask setup
 app = Flask(__name__)
 
-# SQLAlchemy setup
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+USER_STATE_FILE = "user_states.pkl"
 
-# User state table
-class UserStateDB(Base):
-    __tablename__ = "user_states"
-    phone = Column(String(20), primary_key=True, index=True)
-    state_data = Column(Text)
+def load_user_states():
+    if os.path.exists(USER_STATE_FILE):
+        with open(USER_STATE_FILE, "rb") as f:
+            return pickle.load(f)
+    return {}
 
-# Product logic (same as your existing Category, Product, OrderSystem, User classes)
+def save_user_states(states):
+    with open(USER_STATE_FILE, "wb") as f:
+        pickle.dump(states, f)
+
+user_states = load_user_states()
+
+class CustomURLExtract(URLExtract):
+    def _get_cache_file_path(self):
+        cache_dir = "/tmp"
+        return os.path.join(cache_dir, "tlds-alpha-by-domain.txt")
+
+extractor = CustomURLExtract(limit=1)
+
+generation_config = {
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 0,
+    "max_output_tokens": 8192,
+}
+
+safety_settings = [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},  
+    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+]
+
+model = genai.GenerativeModel(model_name=model_name,
+                              generation_config=generation_config,
+                              safety_settings=safety_settings)
+
+convo = model.start_chat(history=[])
+
 class User:
     def __init__(self, payer_name, payer_phone):
         self.payer_name = payer_name
@@ -74,12 +110,7 @@ class OrderSystem:
     def __init__(self):
         self.categories = {}
         self.populate_products()
-    def add_category(self, category):
-        self.categories[category.name] = category
-    def list_categories(self):
-        return list(self.categories.keys())
-    def list_products(self, category_name):
-        return self.categories[category_name].products if category_name in self.categories else []
+
     def populate_products(self):
         # Pantry
         pantry = Category("Pantry")
@@ -323,54 +354,17 @@ class OrderSystem:
         baby_section.add_product(Product("Nan 1: Infant Formula Optipro 400g", 79.99, "Infant formula"))
         self.add_category(baby_section)
 
-# DB State helpers
-def get_user_state(sender):
-    db = SessionLocal()
-    try:
-        db_state = db.query(UserStateDB).filter_by(phone=sender).first()
-        if db_state:
-            state = json.loads(db_state.state_data)
-            state["order_system"] = OrderSystem()
-            u = state.get("user")
-            if u:
-                user = User(u['payer_name'], u['payer_phone'])
-                user.cart = [(Product(p['name'], p['price'], p['description']), q) for p, q in u.get('cart',[])]
-                user.checkout_data = u.get('checkout_data', {})
-                state["user"] = user
-            else:
-                state["user"] = None
-            return state
-        else:
-            return {"step": "ask_name", "order_system": OrderSystem()}
-    finally:
-        db.close()
 
-def save_user_state(sender, state):
-    db = SessionLocal()
-    try:
-        state_copy = dict(state)
-        if "user" in state_copy and isinstance(state_copy["user"], User):
-            user = state_copy["user"]
-            state_copy["user"] = {
-                "payer_name": user.payer_name,
-                "payer_phone": user.payer_phone,
-                "cart": [({"name": p.name, "price": p.price, "description": p.description}, q) for p, q in user.cart],
-                "checkout_data": user.checkout_data
-            }
-        state_copy.pop("order_system", None)
-        json_data = json.dumps(state_copy)
-        record = db.query(UserStateDB).filter_by(phone=sender).first()
-        if record:
-            record.state_data = json_data
-        else:
-            record = UserStateDB(phone=sender, state_data=json_data)
-            db.add(record)
-        db.commit()
-    finally:
-        db.close()
+    def add_category(self, category):
+        self.categories[category.name] = category
 
-# WhatsApp send
-def send(answer, sender, phone_id):
+    def list_categories(self):
+        return list(self.categories.keys())
+
+    def list_products(self, category_name):
+        return self.categories[category_name].products if category_name in self.categories else []
+
+def send(content, sender, phone_id, type="text"):
     url = f"https://graph.facebook.com/v19.0/{phone_id}/messages"
     headers = {
         'Authorization': f'Bearer {wa_token}',
@@ -379,29 +373,58 @@ def send(answer, sender, phone_id):
     data = {
         "messaging_product": "whatsapp",
         "to": sender,
-        "type": "text",
-        "text": {"body": answer}
+        "type": type,
+        type: {
+            "body": content,
+            **({"caption": content} if type != "text" else {})
+        }
     }
     try:
-        resp = requests.post(url, headers=headers, json=data, timeout=10)
-        logging.info("WhatsApp send response: %s %s", resp.status_code, resp.text)
-    except Exception as e:
-        logging.error("WhatsApp send error: %s", e)
+        requests.post(url, headers=headers, json=data, timeout=10)
+    except Exception:
+        pass
 
-# Message handling
+def remove(*file_paths):
+    for file in file_paths:
+        if os.path.exists(file):
+            os.remove(file)
+
+@app.route("/", methods=["GET", "POST"])
+def index():
+    return render_template("connected.html")
+
+@app.route("/webhook", methods=["GET", "POST"])
+def webhook():
+    if request.method == "GET":
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        if mode == "subscribe" and token == "BOT":
+            return challenge, 200
+        return "Failed", 403
+
+    elif request.method == "POST":
+        data = request.get_json()["entry"][0]["changes"][0]["value"]["messages"][0]
+        phone_id = request.get_json()["entry"][0]["changes"][0]["value"]["metadata"]["phone_number_id"]
+        message_handler(data, phone_id)
+        return jsonify({"status": "ok"}), 200
+
 def message_handler(data, phone_id):
-    sender = data.get("from")
-    prompt = data.get("text", {}).get("body", "").strip()
-    user_data = get_user_state(sender)
-    step = user_data.get("step", "ask_name")
-    order_system = user_data.get("order_system", OrderSystem())
+    sender = data["from"]
+    prompt = data["text"]["body"].strip()
+    user_data = user_states.setdefault(sender, {"step": "ask_name", "order_system": OrderSystem()})
+
+    step = user_data["step"]
+    order_system = user_data["order_system"]
     user = user_data.get("user")
 
     def list_categories():
         return "\n".join([f"{chr(65+i)}. {cat}" for i, cat in enumerate(order_system.list_categories())])
+
     def list_products(category_name):
         products = order_system.list_products(category_name)
         return "\n".join([f"{i+1}. {p.name} - R{p.price:.2f}: {p.description}" for i, p in enumerate(products)])
+
     def show_cart(user):
         cart = user.get_cart_contents()
         if not cart:
@@ -426,16 +449,20 @@ def message_handler(data, phone_id):
         "Dema": 300
     }
 
+    # ---- FIX: Only ONE send per prompt, combine messages where needed ----
+
     if step == "ask_name":
         send("Hello! Welcome to Zimbogrocer. What's your name?", sender, phone_id)
         user_data["step"] = "save_name"
+
     elif step == "save_name":
         user = User(prompt.title(), sender)
         user_data["user"] = user
         send(f"Thanks {user.payer_name}! Please select a category:\n{list_categories()}", sender, phone_id)
         user_data["step"] = "choose_category"
+
     elif step == "choose_category":
-        try:
+        if prompt.isalpha() and len(prompt) == 1:
             idx = ord(prompt.upper()) - 65
             categories = order_system.list_categories()
             if 0 <= idx < len(categories):
@@ -445,8 +472,10 @@ def message_handler(data, phone_id):
                 user_data["step"] = "choose_product"
             else:
                 send("Invalid category. Try again:\n" + list_categories(), sender, phone_id)
-        except Exception:
-            send("Invalid category. Try again:\n" + list_categories(), sender, phone_id)
+        else:
+            send("Please enter a valid category letter (e.g., A, B, C).", sender, phone_id)
+
+
     elif step == "choose_product":
         try:
             index = int(prompt) - 1
@@ -458,74 +487,128 @@ def message_handler(data, phone_id):
                 user_data["step"] = "ask_quantity"
             else:
                 send("Invalid product number. Try again.", sender, phone_id)
-        except Exception:
-            send("Please enter a valid number.", sender, phone_id)
+        except:
+            send("Please enter a valid product number.", sender, phone_id)
+
     elif step == "ask_quantity":
         try:
             qty = int(prompt)
             prod = user_data["selected_product"]
+            if qty < 1:
+                raise ValueError
             user.add_to_cart(prod, qty)
-            user_data["user"] = user
             send("Item added to your cart.\nWhat would you like to do next?\n- View cart\n- Clear cart\n- Remove <item>\n- Add Item", sender, phone_id)
             user_data["step"] = "post_add_menu"
-        except Exception:
-            send("Please enter a valid number for quantity.", sender, phone_id)
+        except:
+            send("Please enter a valid number for quantity (e.g., 1, 2, 3).", sender, phone_id)
+
     elif step == "post_add_menu":
         if prompt.lower() == "view cart":
             cart_message = show_cart(user)
-            send(cart_message, sender, phone_id)
-            send("What would you like to do next?\n- Add Item\n- Checkout\n- Clear cart\n- Remove <item>", sender, phone_id)
+            # FIX: Combine cart and next prompt into one message
+            send(cart_message + "\n\nPlease select your delivery area:\n" + "\n".join([f"{k} - R{v:.2f}" for k, v in delivery_areas.items()]), sender, phone_id)
+            user_data["step"] = "get_area"
         elif prompt.lower() == "clear cart":
             user.clear_cart()
-            user_data["user"] = user
-            send("Cart cleared.", sender, phone_id)
-            send("What would you like to do next?\n- Add Item\n- View cart", sender, phone_id)
+            send("Cart cleared.\nWhat would you like to do next?\n- View cart\n- Add Item", sender, phone_id)
+            user_data["step"] = "post_add_menu"
         elif prompt.lower().startswith("remove "):
             item = prompt[7:].strip()
             user.remove_from_cart(item)
-            user_data["user"] = user
-            send(f"{item} removed from cart.\n{show_cart(user)}", sender, phone_id)
-            send("What would you like to do next?\n- Add Item\n- View cart", sender, phone_id)
+            send(f"{item} removed from cart.\n{show_cart(user)}\nWhat would you like to do next?\n- View cart\n- Add Item", sender, phone_id)
+            user_data["step"] = "post_add_menu"
         elif prompt.lower() in ["add", "add item", "add another", "add more"]:
             send("Sure! Here are the available categories:\n" + list_categories(), sender, phone_id)
             user_data["step"] = "choose_category"
         else:
             send("Sorry, I didn't understand. You can:\n- View Cart\n- Clear Cart\n- Remove <item>\n- Add Item", sender, phone_id)
-    # Add more steps for checkout, delivery, etc. as needed
 
-    save_user_state(sender, user_data)
+    elif step == "get_area":
+        area = prompt.strip().title()
+        if area in delivery_areas:
+            user.checkout_data["delivery_area"] = area
+            fee = delivery_areas[area]
+            user.checkout_data["delivery_fee"] = fee
+            delivery_product = Product("__Delivery__", fee, f"Delivery to {area}")
+            user.add_to_cart(delivery_product, 1)
+            send(show_cart(user) + "\nWould you like to checkout? (yes/no)", sender, phone_id)
+            user_data["step"] = "ask_checkout"
+        else:
+            area_list = "\n".join([f"{k} - R{v:.2f}" for k, v in delivery_areas.items()])
+            send(f"Invalid area. Please choose from:\n{area_list}", sender, phone_id)
 
-# Index route for testing
-@app.route("/", methods=["GET"])
-def index():
-    return "Bot is running!"
+    elif step == "ask_checkout":
+        if prompt.lower() in ["yes", "y"]:
+            send("Please enter the receiver’s full name.", sender, phone_id)
+            user_data["step"] = "get_receiver_name"
+        elif prompt.lower() in ["no", "n"]:
+            send("What would you like to do next?\n- View cart\n- Clear cart\n- Remove <item>\n- Add Item", sender, phone_id)
+            user_data["step"] = "post_add_menu"
+        else:
+            send("Please respond with 'yes' or 'no'.", sender, phone_id)
 
-# Robust webhook handler
-@app.route("/webhook", methods=["GET", "POST"])
-def webhook():
-    if request.method == "GET":
-        mode = request.args.get("hub.mode")
-        token = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
-        if mode == "subscribe" and token == "BOT":
-            return challenge, 200
-        return "Failed", 403
-    elif request.method == "POST":
-        payload = request.get_json()
-        logging.info("Webhook POST payload: %s", payload)
-        try:
-            value = payload["entry"][0]["changes"][0]["value"]
-            messages = value.get("messages")
-            if not messages:
-                return jsonify({"status": "no messages"}), 200
-            data = messages[0]
-            phone_id = value["metadata"]["phone_number_id"]
-            message_handler(data, phone_id)
-            return jsonify({"status": "ok"}), 200
-        except Exception as e:
-            logging.exception("Webhook error: %s", e)
-            return jsonify({"status": "error", "message": str(e)}), 400
+    elif step == "get_receiver_name":
+        user.checkout_data["receiver_name"] = prompt
+        send("Enter the delivery address.", sender, phone_id)
+        user_data["step"] = "get_address"
+
+    elif step == "get_address":
+        user.checkout_data["address"] = prompt
+        send("Enter receiver’s ID number.", sender, phone_id)
+        user_data["step"] = "get_id"
+
+    elif step == "get_id":
+        user.checkout_data["id_number"] = prompt
+        send("Enter receiver’s phone number.", sender, phone_id)
+        user_data["step"] = "get_phone"
+
+    elif step == "get_phone":
+        user.checkout_data["phone"] = prompt
+        details = user.checkout_data
+        confirm_message = (f"Please confirm the details below:\n\n"
+            f"Name: {details['receiver_name']}\n"
+            f"Address: {details['address']}\n"
+            f"ID: {details['id_number']}\n"
+            f"Phone: {details['phone']}\n\n"
+            "Are these correct? (yes/no)")
+        send(confirm_message, sender, phone_id)
+        user_data["step"] = "confirm_details"
+
+    elif step == "confirm_details":
+        if prompt.lower() in ["yes", "y"]:
+            order_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            payment_info = (
+                f"Please make payment using one of the following options:\n\n"
+                f"1. EFT\nBank: FNB\nName: Zimbogrocer (Pty) Ltd\nAccount: 62847698167\nBranch Code: 250655\nSwift Code: FIRNZAJJ\nReference: {order_id}\nPlease remember to send the Proof of Payment as soon as you make payment.\n Have a nice day.\n\n"
+                f"2. Pay at supermarkets: SHOPRITE, CHECKERS, USAVE, PICK N PAY, GAME, MAKRO or SPAR using Mukuru wicode\n\n"
+                f"3. World Remit Transfer (payment details provided upon request)\n\n"
+                f"4. Western Union ( payment details provided upon request)\n\n"
+                f"Order ID: {order_id}"
+            )
+            send(
+                f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\n"
+                f"Receiver: {user.checkout_data['receiver_name']}\n"
+                f"Address: {user.checkout_data['address']}\n"
+                f"Phone: {user.checkout_data['phone']}\n\n"
+                f"{payment_info}\nWould you like to place another order? (yes/no)", sender, phone_id
+            )
+            user.clear_cart()
+            user_data["step"] = "ask_place_another_order"
+        else:
+            send("Okay, let's correct the details. What's the receiver’s full name?", sender, phone_id)
+            user_data["step"] = "get_receiver_name"
+
+    elif step == "ask_place_another_order":
+        if prompt.lower() in ["yes", "y"]:
+            send("Great! Please select a category:\n" + list_categories(), sender, phone_id)
+            user_data["step"] = "choose_category"
+        else:
+            send("Okay. Have a good day! 😊", sender, phone_id)
+            user_data["step"] = "ask_name"
+
+    # Persist user states after each message
+    user_states[sender] = user_data
+    save_user_states(user_states)
 
 if __name__ == "__main__":
-    Base.metadata.create_all(bind=engine)
     app.run(debug=True, port=8000)
