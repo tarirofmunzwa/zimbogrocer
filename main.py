@@ -529,14 +529,27 @@ def message_handler(data, phone_id):
     elif step == "confirm_details":
         if prompt.lower() in ["yes", "y"]:
             order_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-            payment_info = f"Please make payment using one of the following options:\n\n1. Bank Transfer\nBank: ZimBank\nAccount: 123456789\nReference: {order_id}\n\n2. Pay at supermarkets: Shoprite, Checkers, Usave, Game, Spar, or Pick n Pay\n\n3. Pay via Mukuru\n\n4. Send via WorldRemit or Western Union\n\nInclude your Order ID as reference: {order_id}"
-            send(f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\nReceiver: {user.checkout_data['receiver_name']}\nAddress: {user.checkout_data['address']}\nPhone: {user.checkout_data['phone']}\n\n{payment_info}", sender, phone_id)
+            payment_info = (
+                f"Please make payment using one of the following options:\n\n"
+                f"1. EFT\nBank: FNB\nName: Zimbogrocer (Pty) Ltd\nAccount: 62847698167\nBranch Code: 250655\nSwift Code: FIRNZAJJ\nReference: {order_id}\nPlease remember to send the Proof of Payment as soon as you make payment.\n Have a nice day.\n\n"
+                f"2. Pay at supermarkets: SHOPRITE, CHECKERS, USAVE, PICK N PAY, GAME, MAKRO or SPAR using Mukuru wicode\n\n"
+                f"3. World Remit Transfer (payment details provided upon request)\n\n"
+                f"4. Western Union ( payment details provided upon request)\n\n"
+                f"Order ID: {order_id}"
+            )
+            send(
+                f"Order placed! 🛒\nOrder ID: {order_id}\n\n{show_cart(user)}\n\n"
+                f"Receiver: {user.checkout_data['receiver_name']}\n"
+                f"Address: {user.checkout_data['address']}\n"
+                f"Phone: {user.checkout_data['phone']}\n\n"
+                f"{payment_info}\nWould you like to place another order? (yes/no)", sender, phone_id
+            )
             user.clear_cart()
             user_data["step"] = "ask_place_another_order"
-            send("Would you like to place another order? (yes/no)", sender, phone_id)
         else:
             send("Okay, let's correct the details. What's the receiver’s full name?", sender, phone_id)
             user_data["step"] = "get_receiver_name"
+
     
     elif step == "ask_place_another_order":
         if prompt.lower() in ["yes", "y"]:
